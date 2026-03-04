@@ -18,7 +18,6 @@ import RecentActivity from "../../components/RecentActivity.jsx";
 import TrendingOffersCompact from "../../components/TrendingOffersCompact.jsx";
 import WhyTrustUs from "../../components/WhyTrustUs.jsx";
 import ExpandableText from "../../components/ExpandableText.jsx";
-import DOMPurify from "isomorphic-dompurify";
 import { api } from "../../lib/api";
 import SavingsImpact from "../../components/SavingsImpact.astro";
 import FeedbackForm from "../../components/islands/FeedbackForm.jsx";
@@ -138,27 +137,10 @@ const pageDesc =
   (store?.name ? `Saving Harbor coupons and deals for ${store.name}.` : "Saving Harbor store coupons and deals.");
 const canonical = meta?.canonical;
 const jsonld = meta?.jsonld;
-// const safeSideHtml = store?.about_html ? DOMPurify.sanitize(store.about_html) : null;
-// const safeDescriptionHtml = store?.description_html ? DOMPurify.sanitize(store.description_html) : null;
-const _ALLOWED_TAGS = [
-  "h1","h2","h3","h4","p","br",
-  "strong","b","em","i","u","s",
-  "ul","ol","li",
-  "a","img","blockquote"
-];
-const _ALLOWED_ATTR = [
-  "href","title","rel","target",
-  "src","alt","width","height",
-  "id", "class", "loading" // add any small attrs you need
-];
 
-const safeSideHtml = store?.about_html
-  ? DOMPurify.sanitize(store.about_html, { ALLOWED_TAGS: _ALLOWED_TAGS, ALLOWED_ATTR: _ALLOWED_ATTR })
-  : null;
+const safeSideHtml = store?.about_html || null;
 
-const safeDescriptionHtml = store?.description_html
-  ? DOMPurify.sanitize(store.description_html, { ALLOWED_TAGS: _ALLOWED_TAGS, ALLOWED_ATTR: _ALLOWED_ATTR })
-  : null;
+const safeDescriptionHtml = store?.description_html|| null;
 
 const activeCoupons = store?.stats?.active_coupons || 0;
 const minSavings = activeCoupons * 100;
