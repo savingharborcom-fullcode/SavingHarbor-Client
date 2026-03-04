@@ -30,4 +30,4 @@ YML
 
 git add .github/workflows/warmup.yml
 git commit -m "fix: validated warmup workflow"
-git push origin main
+git push origin production
