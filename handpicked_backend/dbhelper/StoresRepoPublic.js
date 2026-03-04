@@ -159,7 +159,7 @@ export async function list({
           countQuery = countQuery.contains("category_names", [categoryName]);
         if (seasonStoreIds) countQuery = countQuery.in("id", seasonStoreIds);
         if (letter && letter !== "All") {
-          if (letter === "0-9") countQuery = countQuery.regex("name", "^[0-9]");
+          if (letter === "0-9") countQuery = countQuery.gte("name", "0").lt("name", "9\uffff");
           else countQuery = countQuery.ilike("name", `${letter}%`);
         }
         const { count, error: cErr } = await countQuery;
