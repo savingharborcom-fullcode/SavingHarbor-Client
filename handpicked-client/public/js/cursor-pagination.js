@@ -95,8 +95,6 @@
         const json = await fetchJson(target.url);
         // json.html expected to be server-rendered markup for the resource list
         if (json.html !== undefined && json.html !== null) {
-          // If you prefer to sanitize, include DOMPurify on the page and use:
-          // container.innerHTML = DOMPurify.sanitize(json.html);
           container.innerHTML = json.html;
           // ensure grid wrapper exists (fallback)
           if (!container.querySelector(".grid")) {

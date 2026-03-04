@@ -25,7 +25,6 @@
     "astro-critters": "^2.2.1",
     "dompurify": "^3.2.6",
     "embla-carousel-react": "^8.6.0",
-    "isomorphic-dompurify": "^2.26.0",
     "lru-cache": "^11.2.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
