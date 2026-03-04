@@ -1,6 +1,8 @@
 name: keep-render-warm
 
 on:
+  push:
+    branches: [production]
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch: {}
