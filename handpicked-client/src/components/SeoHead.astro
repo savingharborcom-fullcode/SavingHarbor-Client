@@ -36,7 +36,7 @@ const defaultDesc = hasMonthYearSuffix(rawDesc)
   ? rawDesc
   : `${rawDesc} ${suffix}`;
 
-const canonical = `https://savingharbor.com${Astro.url.pathname}`;
+const canonical = `https://www.savingharbor.com${Astro.url.pathname.replace(/\/$/, "")}`;
 const ogImage = meta.og_image || "/og-default.png";
 const jsonld = meta.jsonld;
 ---
