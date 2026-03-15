@@ -208,18 +208,18 @@ function chunk(arr, size) {
       await writeSitemap(name, categoryChunks[i]);
     }
 
-    // 5) Store listing pages (A-Z)
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-    const storeListPages = [
-      { url: "/stores", lastmod: today, changefreq: "daily", priority: 1.0 },
-      ...letters.map((l) => ({
-        url: `/stores/${l}`,
-        lastmod: today,
-        changefreq: "daily",
-        priority: 1.0,
-      })),
-    ];
-    await writeSitemap("sitemap-stores-list.xml", storeListPages);
+    // // 5) Store listing pages (A-Z)
+    // const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    // const storeListPages = [
+    //   { url: "/stores", lastmod: today, changefreq: "daily", priority: 1.0 },
+    //   ...letters.map((l) => ({
+    //     url: `/stores/${l}`,
+    //     lastmod: today,
+    //     changefreq: "daily",
+    //     priority: 1.0,
+    //   })),
+    // ];
+    // await writeSitemap("sitemap-stores-list.xml", storeListPages);
 
     // 6) Sitemap index — picks up all .xml files written above
     const files = fs.readdirSync(OUT_DIR).filter((f) => f.endsWith(".xml"));
