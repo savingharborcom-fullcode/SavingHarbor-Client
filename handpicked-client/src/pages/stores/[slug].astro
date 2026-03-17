@@ -169,6 +169,34 @@ try {
 } catch (e) {
   console.error("Error fetching proofs:", e);
 }
+
+if (jsonld?.["@graph"]) {
+  const storeUrl = `https://savingharbor.com/stores/${store?.slug}`;
+ 
+  // Patch #savings-impact value
+  const savingsNode = jsonld["@graph"].find(
+    (n: any) => n["@id"]?.endsWith("#savings-impact")
+  );
+  if (savingsNode) savingsNode.value = String(totalSavings);
+ 
+  // Remove any existing proof nodes built with empty/stale data on the backend
+  jsonld["@graph"] = jsonld["@graph"].filter(
+    (n: any) => !n["@id"]?.includes("#verification-proof-")
+  );
+ 
+  // Inject one node per proof (indexed)
+  (proofs || []).forEach((proof: { image_url: any; }, i: number) => {
+    if (!proof?.image_url) return;
+    jsonld["@graph"].push({
+      "@type": "ImageObject",
+      "@id": `${storeUrl}/#verification-proof-${i + 1}`,
+      about: { "@id": `${storeUrl}/#merchant` },
+      name: `Coupon Verification Proof ${i + 1}`,
+      description: "Checkout screenshot showing successful coupon application.",
+      contentUrl: proof.image_url,
+    });
+  });
+}
 ---
 
 <style>

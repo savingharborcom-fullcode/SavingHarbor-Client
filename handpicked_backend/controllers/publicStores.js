@@ -3,7 +3,6 @@ import * as StoresRepo from "../dbhelper/StoresRepoPublic.js";
 import * as CouponsRepo from "../dbhelper/CouponsRepoPublic.js";
 import { ok, fail, notFound } from "../utils/http.js";
 import { withCache } from "../utils/cache.js";
-import { buildStoreJsonLd } from "../utils/jsonld.js";
 import {
   valPage,
   valLimit,
@@ -13,12 +12,11 @@ import {
 } from "../utils/validation.js";
 import { badRequest } from "../utils/errors.js";
 import { STORE_SORTS, STORE_COUPON_TYPES } from "../constants/publicEnums.js";
-import * as TestimonialsRepo from "../dbhelper/TestimonialsRepo.js";
-import * as ActivityRepo from "../dbhelper/ActivityRepo.js";
 import DOMPurify from "isomorphic-dompurify";
 import { getOrigin, getPath } from "../utils/request-helper.js";
 import { buildPrevNext } from "../utils/pagination.js";
 import { makeListCacheKey } from "../utils/cacheKey.js";
+import { buildStoreSchema } from "../utils/buildStoreSchema.js";
 
 /**
  * GET /public/v1/stores
@@ -34,7 +32,7 @@ export async function list(req, res) {
     const categorySlug = String(req.query.category || "").trim();
     const letter = String(req.query.letter || "All").trim();
     const cursor = String(req.query.cursor || null);
-    
+
     const seasonSlug = req.query.season
       ? String(req.query.season).trim().toLowerCase()
       : null;
@@ -42,7 +40,7 @@ export async function list(req, res) {
     const origin = await Promise.resolve(getOrigin(req, { trustProxy: false }));
     const path = await Promise.resolve(getPath(req));
     const mode = req.query.mode || "default";
-    
+
     const params = {
       q: q.trim(),
       categorySlug,
@@ -56,7 +54,7 @@ export async function list(req, res) {
       mode,
       cursor,
     };
-0
+    0;
     const cacheKey = makeListCacheKey("stores", {
       limit,
       q: params.q || "",
@@ -195,13 +193,24 @@ export async function detail(req, res) {
           return { items: [], total: 0 };
         });
 
-        const [couponsResult, relatedResult, trendingResult, recentResult] =
-          await Promise.all([
-            couponsPromise,
-            relatedPromise,
-            trendingPromise,
-            recentActivityPromise,
-          ]);
+        const clickCountPromise = sumClickCount(store.id).catch((e) => {
+          console.warn("sumClickCount failed:", e);
+          return 0;
+        });
+
+        const [
+          couponsResult,
+          relatedResult,
+          trendingResult,
+          recentResult,
+          totalClicks,
+        ] = await Promise.all([
+          couponsPromise,
+          relatedPromise,
+          trendingPromise,
+          recentActivityPromise,
+          clickCountPromise,
+        ]);
 
         const extractDiscountScore = (title = "") => {
           const percentMatch = title.match(/(\d+)\s*%/);
@@ -334,20 +343,20 @@ export async function detail(req, res) {
           answer: DOMPurify.sanitize(f.answer),
         }));
 
-        const faqJsonLd = faqs.length
-          ? {
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              mainEntity: faqs.map((f) => ({
-                "@type": "Question",
-                name: f.question,
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: f.answer,
-                },
-              })),
-            }
-          : null;
+        // const faqJsonLd = faqs.length
+        //   ? {
+        //       "@context": "https://schema.org",
+        //       "@type": "FAQPage",
+        //       mainEntity: faqs.map((f) => ({
+        //         "@type": "Question",
+        //         name: f.question,
+        //         acceptedAnswer: {
+        //           "@type": "Answer",
+        //           text: f.answer,
+        //         },
+        //       })),
+        //     }
+        //   : null;
 
         // Testimonials / ratings fallback (kept as before)
         let testimonials = [];
@@ -367,40 +376,54 @@ export async function detail(req, res) {
           locale: params.locale,
         });
         const breadcrumbs = StoresRepo.buildBreadcrumbs(store, params);
-        const jsonld = {
-          organization: buildStoreJsonLd(store, params.origin),
-          breadcrumb: {
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: breadcrumbs.map((b, i) => ({
-              "@type": "ListItem",
-              position: i + 1,
-              name: b.name,
-              item: b.url,
-            })),
-          },
-          faq: faqJsonLd,
-          person: store.verifier
-            ? {
-                "@context": "https://schema.org",
-                "@type": "Person",
-                "@id": `${SITE_URL}/author/${store.verifier.slug}`,
-                name: store.verifier.name,
-                jobTitle: store.verifier.designation,
-                ...(store.verifier.avatar_url
-                  ? {
-                      image: {
-                        "@type": "ImageObject",
-                        url: store.verifier.avatar_url,
-                      },
-                    }
-                  : {}),
-                worksFor: { "@id": `${SITE_URL}/#organization` },
-                sameAs: (store.verifier.same_as || []).map((s) => s.url),
-              }
-            : null,
-        };
+        // const jsonld = {
+        //   organization: buildStoreJsonLd(store, params.origin),
+        //   breadcrumb: {
+        //     "@context": "https://schema.org",
+        //     "@type": "BreadcrumbList",
+        //     itemListElement: breadcrumbs.map((b, i) => ({
+        //       "@type": "ListItem",
+        //       position: i + 1,
+        //       name: b.name,
+        //       item: b.url,
+        //     })),
+        //   },
+        //   faq: faqJsonLd,
+        //   person: store.verifier
+        //     ? {
+        //         "@context": "https://schema.org",
+        //         "@type": "Person",
+        //         "@id": `${SITE_URL}/author/${store.verifier.slug}`,
+        //         name: store.verifier.name,
+        //         jobTitle: store.verifier.designation,
+        //         ...(store.verifier.avatar_url
+        //           ? {
+        //               image: {
+        //                 "@type": "ImageObject",
+        //                 url: store.verifier.avatar_url,
+        //               },
+        //             }
+        //           : {}),
+        //         worksFor: { "@id": `${SITE_URL}/#organization` },
+        //         sameAs: (store.verifier.same_as || []).map((s) => s.url),
+        //       }
+        //     : null,
+        // };
 
+        const jsonld = buildStoreSchema({
+          store, // has web_url now
+          seo,
+          coupons: couponsItems,
+          trendingOffers,
+          relatedStores: related,
+          recentActivity,
+          faqs, // all FAQs, no limit
+          proofs: [], // proofs fetched client-side in astro; pass [] here
+          // OR pass proofs if you move that fetch to backend
+          totalSavings: 0, // computed in [slug].astro — pass 0 here, astro will override
+          totalClicks,
+          generatedAt: new Date().toISOString(),
+        });
         // Coupons prev/next navigation helper – rewrite to backend base if configured
         const couponsNav = buildPrevNext({
           origin: params.origin,

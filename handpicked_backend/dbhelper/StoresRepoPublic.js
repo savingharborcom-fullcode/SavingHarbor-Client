@@ -159,7 +159,8 @@ export async function list({
           countQuery = countQuery.contains("category_names", [categoryName]);
         if (seasonStoreIds) countQuery = countQuery.in("id", seasonStoreIds);
         if (letter && letter !== "All") {
-          if (letter === "0-9") countQuery = countQuery.gte("name", "0").lt("name", "9\uffff");
+          if (letter === "0-9")
+            countQuery = countQuery.gte("name", "0").lt("name", "9\uffff");
           else countQuery = countQuery.ilike("name", `${letter}%`);
         }
         const { count, error: cErr } = await countQuery;
@@ -195,6 +196,8 @@ export async function getBySlug(slug) {
     slug,
     name,
     logo_url,
+    web_url,
+    aff_url,
     category_names,
     side_description_html,
     description_html,
@@ -252,6 +255,8 @@ export async function getBySlug(slug) {
       slug: data.slug,
       name: data.name,
       logo_url: data.logo_url,
+      web_url: data.web_url,
+      aff_url: data.aff_url,
       category_names: Array.isArray(data.category_names)
         ? data.category_names
         : [],
@@ -421,4 +426,32 @@ export async function insertStoreFeedback({ storeId, name, email, message }) {
   }
 
   return data;
+}
+
+/**
+ * Sum click_count across all published coupons for a merchant.
+ * Used for aggregateRating.reviewCount in JSON-LD schema.
+ *
+ * @param {number} merchantId
+ * @returns {Promise<number>}
+ */
+export async function sumClickCount(merchantId) {
+  if (!merchantId) return 0;
+  try {
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("click_count")
+      .eq("merchant_id", merchantId)
+      .eq("is_publish", true);
+
+    if (error) {
+      console.warn("sumClickCount error:", error);
+      return 0;
+    }
+
+    return (data || []).reduce((acc, row) => acc + (row.click_count || 0), 0);
+  } catch (e) {
+    console.warn("sumClickCount unexpected error:", e);
+    return 0;
+  }
 }
