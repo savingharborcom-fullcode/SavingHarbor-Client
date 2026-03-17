@@ -1,6 +1,5 @@
 // utils/buildStoreSchema.js
 // Builds the full JSON-LD @graph for a SavingHarbor store page.
-// All 17 nodes — nothing omitted.
 
 const SITE_URL = "https://www.savingharbor.com";
 const SITE_NAME = "SavingHarbor";
@@ -128,21 +127,22 @@ export function buildStoreSchema({
       url: store.logo_url || "",
     },
     description: seo.meta_description,
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.5",
-      reviewCount: String(totalClicks || 0),
-    },
+    // aggregateRating: {
+    //   "@type": "AggregateRating",
+    //   ratingValue: "4.5",
+    //   reviewCount: String(totalClicks || 0),
+    // },
     subjectOf: [{
       "@type": "FAQPage",
       "@id": `${storeUrl}/#faq`,
     },{
       "@type": "Review",
       "@id": `${storeUrl}/#verification-review`,
-    }, {
-      "@type": "QuantitativeValue",
-      "@id": `${storeUrl}/#savings-impact`,
     }
+    // , {
+    //   "@type": "QuantitativeValue",
+    //   "@id": `${storeUrl}/#savings-impact`,
+    // }
   ],
   });
 
@@ -218,14 +218,14 @@ export function buildStoreSchema({
   // });
 
   // ── 10. QuantitativeValue (Savings Impact) ────────────────────────────────
-  graph.push({
-    "@type": "QuantitativeValue",
-    "@id": `${storeUrl}/#savings-impact`,
+  // graph.push({
+  //   "@type": "QuantitativeValue",
+  //   "@id": `${storeUrl}/#savings-impact`,
 
-    name: "Total Savings Impact",
-    value: String(totalSavings || 0),
-    unitText: "USD",
-  });
+  //   name: "Total Savings Impact",
+  //   value: String(totalSavings || 0),
+  //   unitText: "USD",
+  // });
 
   // ── 11. ItemList — Active Coupons ─────────────────────────────────────────
   graph.push({
