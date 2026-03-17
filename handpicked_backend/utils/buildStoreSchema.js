@@ -184,7 +184,7 @@ export function buildStoreSchema({
         bestRating: "5",
       },
       reviewBody:
-        "Coupon verification performed manually with cart testing and proof screenshot.",
+        `Our team performs comprehensive merchant-wide verification for ${store.name}. We manually test multiple checkout paths to ensure all sitewide offers and seasonal deals are fully operational. The attached screenshots serve as proof of successful application across the entire store.`,
     });
   }
 
