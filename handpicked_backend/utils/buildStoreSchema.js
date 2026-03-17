@@ -166,27 +166,27 @@ export function buildStoreSchema({
     });
   }
 
-  // ── 7. Review (Verification Review) ──────────────────────────────────────
-  // if (store.verifier) {
-  //   graph.push({
-  //     "@type": "Review",
-  //     "@id": `${storeUrl}/#verification-review`,
-  //     author: {
-  //       "@id": `${storeUrl}/#author`,
-  //     },
-  //     itemReviewed: {
-  //       "@id": `${storeUrl}/#merchant`,
-  //     },
-  //     datePublished: lastVerified,
-  //     reviewRating: {
-  //       "@type": "Rating",
-  //       ratingValue: "5",
-  //       bestRating: "5",
-  //     },
-  //     reviewBody:
-  //       "Coupon verification performed manually with cart testing and proof screenshot.",
-  //   });
-  // }
+//  ── 7. Review (Verification Review) ──────────────────────────────────────
+  if (store.verifier) {
+    graph.push({
+      "@type": "Review",
+      "@id": `${storeUrl}/#verification-review`,
+      author: {
+        "@id": `${storeUrl}/#author`,
+      },
+      itemReviewed: {
+        "@id": `${storeUrl}/#merchant`,
+      },
+      datePublished: lastVerified,
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: "5",
+        bestRating: "5",
+      },
+      reviewBody:
+        "Coupon verification performed manually with cart testing and proof screenshot.",
+    });
+  }
 
   // ── 8. ImageObject (Verification Proofs — one node per proof, indexed) ──────
   (proofs || []).forEach((proof, i) => {
