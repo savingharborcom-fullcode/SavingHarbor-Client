@@ -193,10 +193,12 @@ export async function detail(req, res) {
           return { items: [], total: 0 };
         });
 
-        const clickCountPromise = sumClickCount(store.id).catch((e) => {
-          console.warn("sumClickCount failed:", e);
-          return 0;
-        });
+        const clickCountPromise = StoresRepo.sumClickCount(store.id).catch(
+          (e) => {
+            console.warn("sumClickCount failed:", e);
+            return 0;
+          },
+        );
 
         const [
           couponsResult,
