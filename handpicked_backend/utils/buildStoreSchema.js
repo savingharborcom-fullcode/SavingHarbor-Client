@@ -2,9 +2,9 @@
 // Builds the full JSON-LD @graph for a SavingHarbor store page.
 // All 17 nodes — nothing omitted.
 
-const SITE_URL = "https://savingharbor.com";
+const SITE_URL = "https://www.savingharbor.com";
 const SITE_NAME = "SavingHarbor";
-const LOGO_URL = "https://savingharbor.com/logo.png";
+const LOGO_URL = "https://www.savingharbor.com/logo.png";
 
 /**
  * buildStoreSchema(payload)
@@ -133,6 +133,17 @@ export function buildStoreSchema({
       ratingValue: "4.9",
       reviewCount: String(totalClicks || 0),
     },
+    subjectOf: [{
+      "@type": "FAQPage",
+      "@id": `${storeUrl}/#faq`,
+    },{
+      "@type": "Review",
+      "@id": `${storeUrl}/#verification-review`,
+    }, {
+      "@type": "QuantitativeValue",
+      "@id": `${storeUrl}/#verification-review`,
+    }
+  ],
   });
 
   // ── 6. Person (Verifier/Author) ───────────────────────────────────────────
@@ -143,6 +154,8 @@ export function buildStoreSchema({
       name: store.verifier.name,
       jobTitle:
         store.verifier.designation || "Lead Coupon Verification Specialist",
+      description: store.verifier.bio_html,
+      knowsAbout: ["Coupon Verification", "E-commerce Discounts", "Savings Strategies"],
       worksFor: {
         "@id": `${SITE_URL}/#organization`,
       },
@@ -208,6 +221,7 @@ export function buildStoreSchema({
   graph.push({
     "@type": "QuantitativeValue",
     "@id": `${storeUrl}/#savings-impact`,
+
     name: "Total Savings Impact",
     value: String(totalSavings || 0),
     unitText: "USD",
