@@ -130,7 +130,7 @@ export function buildStoreSchema({
     description: seo.meta_description,
     aggregateRating: {
       "@type": "AggregateRating",
-      ratingValue: "4.9",
+      ratingValue: "4.5",
       reviewCount: String(totalClicks || 0),
     },
     subjectOf: [{
@@ -141,7 +141,7 @@ export function buildStoreSchema({
       "@id": `${storeUrl}/#verification-review`,
     }, {
       "@type": "QuantitativeValue",
-      "@id": `${storeUrl}/#verification-review`,
+      "@id": `${storeUrl}/#savings-impact`,
     }
   ],
   });
@@ -167,26 +167,26 @@ export function buildStoreSchema({
   }
 
   // ── 7. Review (Verification Review) ──────────────────────────────────────
-  if (store.verifier) {
-    graph.push({
-      "@type": "Review",
-      "@id": `${storeUrl}/#verification-review`,
-      author: {
-        "@id": `${storeUrl}/#author`,
-      },
-      itemReviewed: {
-        "@id": `${storeUrl}/#merchant`,
-      },
-      datePublished: lastVerified,
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: "5",
-        bestRating: "5",
-      },
-      reviewBody:
-        "Coupon verification performed manually with cart testing and proof screenshot.",
-    });
-  }
+  // if (store.verifier) {
+  //   graph.push({
+  //     "@type": "Review",
+  //     "@id": `${storeUrl}/#verification-review`,
+  //     author: {
+  //       "@id": `${storeUrl}/#author`,
+  //     },
+  //     itemReviewed: {
+  //       "@id": `${storeUrl}/#merchant`,
+  //     },
+  //     datePublished: lastVerified,
+  //     reviewRating: {
+  //       "@type": "Rating",
+  //       ratingValue: "5",
+  //       bestRating: "5",
+  //     },
+  //     reviewBody:
+  //       "Coupon verification performed manually with cart testing and proof screenshot.",
+  //   });
+  // }
 
   // ── 8. ImageObject (Verification Proofs — one node per proof, indexed) ──────
   (proofs || []).forEach((proof, i) => {
@@ -204,18 +204,18 @@ export function buildStoreSchema({
   });
 
   // ── 9. Dataset ────────────────────────────────────────────────────────────
-  graph.push({
-    "@type": "Dataset",
-    "@id": `${storeUrl}/#coupon-dataset`,
-    about: {
-      "@id": `${storeUrl}/#merchant`,
-    },
-    name: `${store.name} Coupon Verification Dataset`,
-    description: `Dataset tracking coupon verification, savings impact and user usage for ${store.name}.`,
-    creator: {
-      "@id": `${SITE_URL}/#organization`,
-    },
-  });
+  // graph.push({
+  //   "@type": "Dataset",
+  //   "@id": `${storeUrl}/#coupon-dataset`,
+  //   about: {
+  //     "@id": `${storeUrl}/#merchant`,
+  //   },
+  //   name: `${store.name} Coupon Verification Dataset`,
+  //   description: `Dataset tracking coupon verification, savings impact and user usage for ${store.name}.`,
+  //   creator: {
+  //     "@id": `${SITE_URL}/#organization`,
+  //   },
+  // });
 
   // ── 10. QuantitativeValue (Savings Impact) ────────────────────────────────
   graph.push({
@@ -227,19 +227,7 @@ export function buildStoreSchema({
     unitText: "USD",
   });
 
-  // ── 11. DefinedTermSet (Trust Signals) ────────────────────────────────────
-  graph.push({
-    "@type": "DefinedTermSet",
-    "@id": `${storeUrl}/#trust-signals`,
-    name: "Why Trust SavingHarbor",
-    hasDefinedTerm: [
-      { "@type": "DefinedTerm", name: "Verified Daily Coupons" },
-      { "@type": "DefinedTerm", name: "Real Savings Testing" },
-      { "@type": "DefinedTerm", name: "Secure Merchant Connections" },
-    ],
-  });
-
-  // ── 12. ItemList — Active Coupons ─────────────────────────────────────────
+  // ── 11. ItemList — Active Coupons ─────────────────────────────────────────
   graph.push({
     "@type": "ItemList",
     "@id": `${storeUrl}/#coupon-list`,
@@ -262,35 +250,7 @@ export function buildStoreSchema({
     })),
   });
 
-  // ── 13. ItemList — Trending Offers ────────────────────────────────────────
-  graph.push({
-    "@type": "ItemList",
-    "@id": `${storeUrl}/#trending-offers`,
-    name: `Trending ${store.name} Offers`,
-    itemListElement: trendingOffers.map((o, i) => ({
-      "@type": "Offer",
-      position: i + 1,
-      name: o.title || "",
-      url: storeUrl,
-    })),
-  });
-
-  // ── 14. ItemList — Recent Activity ────────────────────────────────────────
-  const recentItems = recentActivity?.recent || [];
-  graph.push({
-    "@type": "ItemList",
-    "@id": `${storeUrl}/#recent-activity`,
-    name: "Recent Coupon Activity",
-    itemListElement: recentItems.map((item, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      name: store.verifier
-        ? `Coupon verified by ${store.verifier.name}`
-        : `Coupon activity: ${item.title || ""}`,
-    })),
-  });
-
-  // ── 15. ItemList — Related Stores ─────────────────────────────────────────
+  // ── 12. ItemList — Related Stores ─────────────────────────────────────────
   graph.push({
     "@type": "ItemList",
     "@id": `${storeUrl}/#related-stores`,
@@ -303,7 +263,7 @@ export function buildStoreSchema({
     })),
   });
 
-  // ── 16. HowTo (Verification Process) ─────────────────────────────────────
+  // ── 13. HowTo (Verification Process) ─────────────────────────────────────
   graph.push({
     "@type": "HowTo",
     "@id": `${storeUrl}/#verification-process`,
@@ -327,7 +287,7 @@ export function buildStoreSchema({
     ],
   });
 
-  // ── 17. FAQPage — all FAQs from DB, no limit ──────────────────────────────
+  // ── 14. FAQPage — all FAQs from DB, no limit ──────────────────────────────
   if (faqs.length > 0) {
     graph.push({
       "@type": "FAQPage",
