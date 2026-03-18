@@ -17,7 +17,6 @@ import { getOrigin, getPath } from "../utils/request-helper.js";
 import { buildPrevNext } from "../utils/pagination.js";
 import { makeListCacheKey } from "../utils/cacheKey.js";
 import { buildStoreSchema } from "../utils/buildStoreSchema.js";
-import { StrictMode } from "react";
 
 /**
  * GET /public/v1/stores
