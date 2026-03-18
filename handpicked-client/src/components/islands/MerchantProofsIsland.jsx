@@ -1,7 +1,10 @@
 // src/components/islands/MerchantProofsIsland.jsx
 import { useState, useEffect } from "react";
 
-export default function MerchantProofsIsland({ proofs: initialProofs = [] }) {
+export default function MerchantProofsIsland({
+  proofs: initialProofs = [],
+  visitUrl = null,
+}) {
   const proofsArr = Array.isArray(initialProofs) ? initialProofs : [];
   const [startIndex, setStartIndex] = useState(0); // index of first visible thumbnail
   const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -163,12 +166,20 @@ export default function MerchantProofsIsland({ proofs: initialProofs = [] }) {
             ‹
           </button>
 
-          <img
-            src={proofsArr[lightboxIndex].image_url}
-            alt={proofsArr[lightboxIndex].filename}
-            className="max-h-full max-w-full rounded shadow-lg animate-fadeIn"
+          <a
+            href={visitUrl || "#"}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
             onClick={(e) => e.stopPropagation()}
-          />
+            aria-label="Visit store"
+          >
+            <img
+              src={proofsArr[lightboxIndex].image_url}
+              alt={proofsArr[lightboxIndex].filename}
+              className="max-h-full max-w-full rounded shadow-lg animate-fadeIn cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </a>
 
           <button
             onClick={(e) => {

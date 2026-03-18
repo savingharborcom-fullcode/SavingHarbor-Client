@@ -17,6 +17,7 @@ import { getOrigin, getPath } from "../utils/request-helper.js";
 import { buildPrevNext } from "../utils/pagination.js";
 import { makeListCacheKey } from "../utils/cacheKey.js";
 import { buildStoreSchema } from "../utils/buildStoreSchema.js";
+import { StrictMode } from "react";
 
 /**
  * GET /public/v1/stores
@@ -465,6 +466,8 @@ export async function detail(req, res) {
             slug: store.slug,
             name: store.name,
             logo_url: store.logo_url,
+            web_url:store.web_url,
+            aff_url:store.aff_url,
             category_names: store.category_names || [],
             seo,
             breadcrumbs,

@@ -45,6 +45,8 @@ type StoreDetail = {
   name: string;
   verifier_id?:number | string | null;
   logo_url?: string | null;
+  web_url?: string | null;
+  aff_url?: string | null;
   category_names?: string[];
   side_description_html?: string | null;
   description_html?: string | null;
@@ -197,6 +199,8 @@ if (jsonld?.["@graph"]) {
     });
   });
 }
+
+const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
 ---
 
 <style>
@@ -298,7 +302,7 @@ if (jsonld?.["@graph"]) {
           <!-- Main content -->
           <div class="lg:col-span-2 space-y-8">
             <!-- Merchant proofs -->
-            <MerchantProofsIsland client:visible proofs={proofs} />
+            <MerchantProofsIsland client:visible proofs={proofs} visitUrl={visitUrl}/>
             <!-- Coupons -->
             <section id="coupons">
               <h2 class="section-heading">Coupons & Deals</h2>
