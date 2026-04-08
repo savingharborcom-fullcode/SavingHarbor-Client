@@ -126,11 +126,18 @@ async function fetchCategories_supabase() {
 async function writeSitemap(filename, items) {
   const finalPath = path.join(OUT_DIR, filename);
   const tmpPath = finalPath + ".tmp";
-  const smStream = new SitemapStream({ hostname: HOSTNAME });
-  items.forEach((i) => smStream.write(i));
-  smStream.end();
-  const buffer = await streamToPromise(smStream);
-  fs.writeFileSync(tmpPath, buffer);
+
+  await new Promise((resolve, reject) => {
+    const smStream = new SitemapStream({ hostname: HOSTNAME });
+    const writeStream = fs.createWriteStream(tmpPath);
+    smStream.pipe(writeStream);
+    items.forEach((i) => smStream.write(i));
+    smStream.end();
+    writeStream.on("finish", resolve);
+    writeStream.on("error", reject);
+    smStream.on("error", reject);
+  });
+
   fs.renameSync(tmpPath, finalPath);
   console.log("Wrote (atomic)", finalPath);
 }
