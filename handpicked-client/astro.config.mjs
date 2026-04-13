@@ -7,6 +7,6 @@ import critters from "astro-critters"
 export default defineConfig({
   output: "server",
   adapter: vercel(),
-  site: "https://savingharbor.com",
+  site: "https://www.savingharbor.com",
   integrations: [tailwind(),react(), critters()],
 });
