@@ -62,7 +62,7 @@ try {
 const author = resp?.data;
 if (!author) return Astro.redirect("/404");
 
-const SITE_URL = "https://savingharbor.com";
+const SITE_URL = "https://www.savingharbor.com";
 const pageUrl = `${SITE_URL}/author/${author.slug}`;
 const ORG_ID = `${SITE_URL}/#organization`;
 const AUTHOR_ID = `${SITE_URL}/author/${author.slug}`;

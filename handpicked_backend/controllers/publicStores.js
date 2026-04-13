@@ -117,7 +117,7 @@ export async function detail(req, res) {
       "editor",
     );
     const locale = valLocale(req.query.locale) || deriveLocale(req);
-    const SITE_URL = "https://savingharbor.com";
+    const SITE_URL = "https://www.savingharbor.com";
 
     const params = {
       slug,

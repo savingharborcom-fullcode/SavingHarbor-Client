@@ -17,7 +17,7 @@ Disallow: /register/
 Disallow: /public/v1/
 
 # Sitemap reference
-Sitemap: https://savingharbor.com/sitemap-index.xml
+Sitemap: https://www.savingharbor.com/sitemap-index.xml
 
 # AI crawlers - explicitly allowed
 User-agent: GPTBot
