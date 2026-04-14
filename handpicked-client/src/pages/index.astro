@@ -9,10 +9,44 @@ import HomeSections from "../components/HomeSections.jsx";
 import { SAMPLE_TESTIMONIALS } from "../content/testimonials.sample";
 import banners from "../content/banners.server";
 import BannerCarousel from "../components/BannerCarousel.jsx";
-
 const firstBanner = banners[0];
 
-const pageMeta = {
+const jsonLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.savingharbor.com/#organization",
+      "name": "SavingHarbor",
+      "url": "https://www.savingharbor.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.savingharbor.com/logo.webp"
+      },
+      "sameAs": [
+        "https://www.facebook.com/profile.php?id=61580887157989",
+        "https://www.instagram.com/savingharbor/"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://www.savingharbor.com/#website",
+      "url": "https://www.savingharbor.com",
+      "name": "SavingHarbor",
+      "publisher": { "@id": "https://www.savingharbor.com/#organization" },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.savingharbor.com/stores?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+};
+
+let pageMeta = {
   title: "Saving Harbor | Verified Coupons & Discounts",
   description:
     "Verified coupons, real savings, no expired junk — handpicked by real humans.",
@@ -24,6 +58,7 @@ const pageMeta = {
   heroSrcSetWebp: firstBanner.variants.webp
     .map((src, i) => `${src} ${[320, 768, 1600][i]}w`)
     .join(", "),
+  jsonld: jsonLD,
 };
 
 const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;

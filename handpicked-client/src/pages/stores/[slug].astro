@@ -215,7 +215,7 @@ const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
 .clamp-3 { -webkit-line-clamp: 3; }
 </style>
 
-<Base meta={{ title: pageTitle, description: pageDesc, canonical, jsonld }}>
+<Base meta={{ title: pageTitle, description: pageDesc, canonical, jsonld, og_image: store?.logo_url }}>
   <Header />
 
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

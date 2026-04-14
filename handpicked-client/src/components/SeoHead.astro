@@ -4,77 +4,63 @@ const meta = (props && props.meta) || {};
 
 const siteName = "Saving Harbor";
 
-// utility: returns "{Mon, YYYY}"
 function getCurrentMonthYear() {
   const now = new Date();
-  const month = now.toLocaleString("en-US", { month: "long" }); // e.g. "Sep"
-  const year = now.getFullYear(); // e.g. 2025
+  const month = now.toLocaleString("en-US", { month: "short" });
+  const year = now.getFullYear();
   return `( ${month}, ${year} ) | Verified`;
 }
 
-// detect existing suffix like "{Sep, 2025}" (basic but reliable)
 function hasMonthYearSuffix(text: string) {
-  if (!text || typeof text !== "string") return false;
-  return /\{\s*[A-Za-z]{3},\s*\d{4}\s*\}$/.test(text.trim());
+  return /\(\s*[A-Za-z]{3},\s*\d{4}\s*\)\s*\|\s*Verified$/.test(
+    text?.trim() || "",
+  );
 }
 
 const suffix = getCurrentMonthYear();
 
-// base values (before suffix)
 const rawTitle =
   meta.title || "Saving Harbor Deals | Verified Coupons & Discounts";
 const rawDesc =
   meta.description ||
   "Verified coupons, real savings, no expired junk — handpicked by real humans.";
 
-// append suffix if not already present
-const defaultTitle = hasMonthYearSuffix(rawTitle)
-  ? rawTitle
-  : `${rawTitle} ${suffix}`;
-
-const defaultDesc = hasMonthYearSuffix(rawDesc)
+const title = hasMonthYearSuffix(rawTitle) ? rawTitle : `${rawTitle} ${suffix}`;
+const description = hasMonthYearSuffix(rawDesc)
   ? rawDesc
   : `${rawDesc} ${suffix}`;
 
 const canonical = `https://www.savingharbor.com${Astro.url.pathname.replace(/\/$/, "")}`;
 const ogImage = meta.og_image || "/og-default.png";
-const jsonld = meta.jsonld;
 ---
 
 <head>
-  <!-- GA preconnect + stub -->
-  <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
-  <link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
-  <script is:inline>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-    window.gtag = window.gtag || gtag;
-  </script>
-
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{defaultTitle}</title>
-  <meta name="description" content={defaultDesc} />
-  {canonical && <link rel="canonical" href={canonical} />}
+
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  {defaultTitle && <meta property="og:title" content={defaultTitle} />}
-  {defaultDesc && <meta property="og:description" content={defaultDesc} />}
-  {canonical && <meta property="og:url" content={canonical} />}
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
   <meta property="og:image" content={ogImage} />
   <meta property="og:image:width" content="1200" />
+  <meta property="og:site_name" content="SavingHarbor" />
   <meta property="og:image:height" content="630" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
-  {defaultTitle && <meta name="twitter:title" content={defaultTitle} />}
-  {defaultDesc && <meta name="twitter:description" content={defaultDesc} />}
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImage} />
+
+  <!-- Preload Hero -->
   {
-    meta.preloadHero && meta.heroSrc ? (
+    meta.preloadHero && meta.heroSrc && (
       <>
         <link
           rel="preload"
@@ -95,18 +81,16 @@ const jsonld = meta.jsonld;
           fetchpriority="high"
         />
       </>
-    ) : null
+    )
   }
-  <link
-    rel="preload"
-    href="/fonts/Inter-Regular.woff2"
-    as="font"
-    type="font/woff2"
-    crossorigin
-  />
+
+  <!-- JSON-LD Schema -->
   {
-    jsonld && (
-      <script type="application/ld+json" set:html={JSON.stringify(jsonld, null, 2)} />
+    meta.jsonld && (
+      <script
+        type="application/ld+json"
+        set:html={JSON.stringify(meta.jsonld)}
+      />
     )
   }
 </head>
