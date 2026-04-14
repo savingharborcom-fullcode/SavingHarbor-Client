@@ -239,10 +239,15 @@ export function buildStoreSchema({
       item: {
         "@type": "Offer",
         name: c.title || "",
+        description: c.description || "",
+        discountCode: c.code || undefined,
+        discount: c.discount_value? `${c.discount_value}${c.discount_type === "percentage" ? "%" : " USD"} off` : undefined,
         url: storeUrl,
-        price: "0",
-        priceCurrency: "USD",
-        availability: "https://schema.org/InStock",
+        validity: c.ends_at ? `until ${new Date(c.ends_at).toLocaleDateString()}` : "Valid until further notice",
+        priceSpecification:{
+          "@type": "PriceSpecification",
+          price: String(c.discount_value)     
+        },   
         seller: {
           "@id": `${storeUrl}/#merchant`,
         },

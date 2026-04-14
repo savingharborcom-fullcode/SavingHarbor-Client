@@ -314,7 +314,7 @@ export async function detail(req, res) {
             title: r.title,
             description: r.description,
             type_text: r.type_text,
-            code: null,
+            code: r.code || null,
             ends_at: r.ends_at,
             show_proof: !!r.show_proof,
             proof_image_url: r.proof_image_url || null,
