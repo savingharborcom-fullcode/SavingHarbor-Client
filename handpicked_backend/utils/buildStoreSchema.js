@@ -80,6 +80,12 @@ export function buildStoreSchema({
     mainEntity: {
       "@id": `${storeUrl}/#merchant`,
     },
+    mainEntity: {
+      "@id": `${storeUrl}/#faq`,
+    },
+    // faqs: {
+    //   "@id": `${storeUrl}/#faq`,
+    // },
     breadcrumb: {
       "@id": `${storeUrl}/#breadcrumb`,
     },
@@ -133,9 +139,6 @@ export function buildStoreSchema({
     //   reviewCount: String(totalClicks || 0),
     // },
     subjectOf: [{
-      "@type": "FAQPage",
-      "@id": `${storeUrl}/#faq`,
-    },{
       "@type": "Review",
       "@id": `${storeUrl}/#verification-review`,
     }
@@ -243,7 +246,10 @@ export function buildStoreSchema({
         discountCode: c.code || undefined,
         discount: c.discount_value? `${c.discount_value}${c.discount_type === "percentage" ? "%" : " USD"} off` : undefined,
         url: storeUrl,
+        availability: c.ends_at && new Date(c.ends_at) < new Date() ? "http://schema.org/OutOfStock" : "http://schema.org/InStock",
         validity: c.ends_at ? `until ${new Date(c.ends_at).toLocaleDateString()}` : "Valid until further notice",
+        price: c.discount_value ? String(c.discount_value) : undefined,
+        priceCurrency: "USD",
         priceSpecification:{
           "@type": "PriceSpecification",
           price: String(c.discount_value)     
