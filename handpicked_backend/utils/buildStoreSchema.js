@@ -233,7 +233,6 @@ export function buildStoreSchema({
         // discount: c.discount_value? `${c.discount_value}${c.discount_type === "percentage" ? "%" : " USD"} off` : undefined,
         url: storeUrl,
         availability: c.ends_at && new Date(c.ends_at) < new Date() ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
-        validity: c.ends_at ? `until ${new Date(c.ends_at).toLocaleDateString()}` : "Valid until further notice",
         price: c.discount_value ? String(c.discount_value) : undefined,
         priceCurrency: "USD",
         seller: {
