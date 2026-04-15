@@ -77,9 +77,9 @@ export function buildStoreSchema({
     about: {
       "@id": `${storeUrl}/#merchant`,
     },
-    mainEntity: {
-      "@id": `${storeUrl}/#merchant`,
-    },
+    // mainEntity: {
+    //   "@id": `${storeUrl}/#merchant`,
+    // },
     mainEntity: {
       "@id": `${storeUrl}/#faq`,
     },
@@ -244,16 +244,12 @@ export function buildStoreSchema({
         name: c.title || "",
         description: c.description || "",
         discountCode: c.code || undefined,
-        discount: c.discount_value? `${c.discount_value}${c.discount_type === "percentage" ? "%" : " USD"} off` : undefined,
+        // discount: c.discount_value? `${c.discount_value}${c.discount_type === "percentage" ? "%" : " USD"} off` : undefined,
         url: storeUrl,
         availability: c.ends_at && new Date(c.ends_at) < new Date() ? "http://schema.org/OutOfStock" : "http://schema.org/InStock",
         validity: c.ends_at ? `until ${new Date(c.ends_at).toLocaleDateString()}` : "Valid until further notice",
         price: c.discount_value ? String(c.discount_value) : undefined,
         priceCurrency: "USD",
-        priceSpecification:{
-          "@type": "PriceSpecification",
-          price: String(c.discount_value)     
-        },   
         seller: {
           "@id": `${storeUrl}/#merchant`,
         },
@@ -275,28 +271,28 @@ export function buildStoreSchema({
   });
 
   // ── 13. HowTo (Verification Process) ─────────────────────────────────────
-  graph.push({
-    "@type": "HowTo",
-    "@id": `${storeUrl}/#verification-process`,
-    name: "SavingHarbor Coupon Verification Process",
-    step: [
-      {
-        "@type": "HowToStep",
-        name: "Manual Merchant Visit",
-        text: `We visit ${store.web_url || store.name} and identify active promotions.`,
-      },
-      {
-        "@type": "HowToStep",
-        name: "Checkout Testing",
-        text: "Coupons are applied during checkout to verify validity.",
-      },
-      {
-        "@type": "HowToStep",
-        name: "Proof Capture",
-        text: "Screenshots are captured as verification proof.",
-      },
-    ],
-  });
+  // graph.push({
+  //   "@type": "HowTo",
+  //   "@id": `${storeUrl}/#verification-process`,
+  //   name: "SavingHarbor Coupon Verification Process",
+  //   step: [
+  //     {
+  //       "@type": "HowToStep",
+  //       name: "Manual Merchant Visit",
+  //       text: `We visit ${store.web_url || store.name} and identify active promotions.`,
+  //     },
+  //     {
+  //       "@type": "HowToStep",
+  //       name: "Checkout Testing",
+  //       text: "Coupons are applied during checkout to verify validity.",
+  //     },
+  //     {
+  //       "@type": "HowToStep",
+  //       name: "Proof Capture",
+  //       text: "Screenshots are captured as verification proof.",
+  //     },
+  //   ],
+  // });
 
   // ── 14. FAQPage — all FAQs from DB, no limit ──────────────────────────────
   if (faqs.length > 0) {
