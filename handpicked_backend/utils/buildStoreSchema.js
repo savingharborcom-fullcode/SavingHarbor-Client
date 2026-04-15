@@ -133,63 +133,49 @@ export function buildStoreSchema({
       url: store.logo_url || "",
     },
     description: seo.meta_description,
-    // aggregateRating: {
-    //   "@type": "AggregateRating",
-    //   ratingValue: "4.5",
-    //   reviewCount: String(totalClicks || 0),
-    // },
-    subjectOf: [{
-      "@type": "Review",
-      "@id": `${storeUrl}/#verification-review`,
-    }
-    // , {
-    //   "@type": "QuantitativeValue",
-    //   "@id": `${storeUrl}/#savings-impact`,
-    // }
-  ],
   });
 
-  // ── 6. Person (Verifier/Author) ───────────────────────────────────────────
-  if (store.verifier) {
-    graph.push({
-      "@type": "Person",
-      "@id": `${storeUrl}/#author`,
-      name: store.verifier.name,
-      jobTitle:
-        store.verifier.designation || "Lead Coupon Verification Specialist",
-      description: store.verifier.bio_html,
-      knowsAbout: ["Coupon Verification", "E-commerce Discounts", "Savings Strategies"],
-      worksFor: {
-        "@id": `${SITE_URL}/#organization`,
-      },
-      image: {
-        "@type": "ImageObject",
-        url: store.verifier.avatar_url || "",
-      },
-    });
-  }
+//   // ── 6. Person (Verifier/Author) ───────────────────────────────────────────
+//   if (store.verifier) {
+//     graph.push({
+//       "@type": "Person",
+//       "@id": `${storeUrl}/#author`,
+//       name: store.verifier.name,
+//       jobTitle:
+//         store.verifier.designation || "Lead Coupon Verification Specialist",
+//       description: store.verifier.bio_html,
+//       knowsAbout: ["Coupon Verification", "E-commerce Discounts", "Savings Strategies"],
+//       worksFor: {
+//         "@id": `${SITE_URL}/#organization`,
+//       },
+//       image: {
+//         "@type": "ImageObject",
+//         url: store.verifier.avatar_url || "",
+//       },
+//     });
+//   }
 
-//  ── 7. Review (Verification Review) ──────────────────────────────────────
-  if (store.verifier) {
-    graph.push({
-      "@type": "Review",
-      "@id": `${storeUrl}/#verification-review`,
-      author: {
-        "@id": `${storeUrl}/#author`,
-      },
-      itemReviewed: {
-        "@id": `${storeUrl}/#merchant`,
-      },
-      datePublished: lastVerified,
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: "5",
-        bestRating: "5",
-      },
-      reviewBody:
-        `Our team performs comprehensive merchant-wide verification for ${store.name}. We manually test multiple checkout paths to ensure all sitewide offers and seasonal deals are fully operational. The attached screenshots serve as proof of successful application across the entire store.`,
-    });
-  }
+// //  ── 7. Review (Verification Review) ──────────────────────────────────────
+//   if (store.verifier) {
+//     graph.push({
+//       "@type": "Review",
+//       "@id": `${storeUrl}/#verification-review`,
+//       author: {
+//         "@id": `${storeUrl}/#author`,
+//       },
+//       itemReviewed: {
+//         "@id": `${storeUrl}/#merchant`,
+//       },
+//       datePublished: lastVerified,
+//       reviewRating: {
+//         "@type": "Rating",
+//         ratingValue: "5",
+//         bestRating: "5",
+//       },
+//       reviewBody:
+//         `Our team performs comprehensive merchant-wide verification for ${store.name}. We manually test multiple checkout paths to ensure all sitewide offers and seasonal deals are fully operational. The attached screenshots serve as proof of successful application across the entire store.`,
+//     });
+//   }
 
   // ── 8. ImageObject (Verification Proofs — one node per proof, indexed) ──────
   (proofs || []).forEach((proof, i) => {
@@ -246,7 +232,7 @@ export function buildStoreSchema({
         discountCode: c.code || undefined,
         // discount: c.discount_value? `${c.discount_value}${c.discount_type === "percentage" ? "%" : " USD"} off` : undefined,
         url: storeUrl,
-        availability: c.ends_at && new Date(c.ends_at) < new Date() ? "http://schema.org/OutOfStock" : "http://schema.org/InStock",
+        availability: c.ends_at && new Date(c.ends_at) < new Date() ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
         validity: c.ends_at ? `until ${new Date(c.ends_at).toLocaleDateString()}` : "Valid until further notice",
         price: c.discount_value ? String(c.discount_value) : undefined,
         priceCurrency: "USD",

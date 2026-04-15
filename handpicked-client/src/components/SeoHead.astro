@@ -89,7 +89,7 @@ const ogImage = meta.og_image || "/og-default.png";
     meta.jsonld && (
       <script
         type="application/ld+json"
-        set:html={JSON.stringify(meta.jsonld)}
+        set:html={JSON.stringify(meta.jsonld, null, 2)}
       />
     )
   }
