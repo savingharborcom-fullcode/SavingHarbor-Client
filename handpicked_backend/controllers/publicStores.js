@@ -150,10 +150,12 @@ export async function detail(req, res) {
 
         store.category_names = [];
         if (store.category_id) {
-          store.category_names.push(getCategoryNameById(store.category_id));
+          const category = getCategoryNameById(store.category_id);
+          if (category) store.category_names.push(category.data.name);
         }
         if (store.subcategory_id) {
-          store.category_names.push(getCategoryNameById(store.subcategory_id));
+          const subcategory = getCategoryNameById(store.subcategory_id);
+          if (subcategory) store.category_names.push(subcategory.data.name);
         }
 
         // Prepare parallel promises
