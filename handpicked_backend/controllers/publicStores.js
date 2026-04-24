@@ -149,16 +149,16 @@ export async function detail(req, res) {
         if (!store) return { data: null, meta: { status: 404 } };
 
         store.category_names = [];
-        if (store.category_id) {
-          const category = await getCategoryNameById(store.category_id);
-          if (category) store.category_names.push(category.name);
-        }
+        const [category, subcategory] = await Promise.all([
+          store.category_id ? getCategoryNameById(store.category_id) : null,
+          store.subcategory_id
+            ? getCategoryNameById(store.subcategory_id)
+            : null,
+        ]);
 
-        if (store.subcategory_id) {
-          const subcategory = await getCategoryNameById(store.subcategory_id);
-          if (subcategory) store.category_names.push(subcategory.name);
-        }
-        // Prepare parallel promises
+        if (category) store.category_names.push(category.name);
+        if (subcategory) store.category_names.push(subcategory.name);
+        
         const couponsPromise = CouponsRepo.listForStore({
           merchantId: store.id,
           type,
