@@ -343,3 +343,30 @@ export async function getSubcategoryBySlug(
     return null;
   }
 }
+
+export async function getCategoryNameById(id) {
+  if (!id) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from("merchant_categories_v2")
+      .select(
+        `
+        id, name, slug
+      `,
+      )
+      .eq("id", id)
+      .eq("is_publish", true)
+      .single();
+
+    if (error || !data) return null;
+    return {
+      id: data.id,
+      name: data.name,
+      slug: data.slug,
+    };
+  } catch (e) {
+    console.error("getCategoryNameById error:", e);
+    return null;
+  }
+}

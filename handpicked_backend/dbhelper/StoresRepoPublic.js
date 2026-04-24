@@ -198,6 +198,8 @@ export async function getBySlug(slug) {
     logo_url,
     web_url,
     aff_url,
+    category_id,
+    subcategory_id,
     category_names,
     side_description_html,
     description_html,
@@ -257,6 +259,8 @@ export async function getBySlug(slug) {
       logo_url: data.logo_url,
       web_url: data.web_url,
       aff_url: data.aff_url,
+      category_id: data.category_id,
+      subcategory_id: data.subcategory_id,
       category_names: Array.isArray(data.category_names)
         ? data.category_names
         : [],

@@ -16,6 +16,7 @@ import DOMPurify from "isomorphic-dompurify";
 import { getOrigin, getPath } from "../utils/request-helper.js";
 import { buildPrevNext } from "../utils/pagination.js";
 import { makeListCacheKey } from "../utils/cacheKey.js";
+import { getCategoryNameById } from "../dbhelper/CategoriesRepoPublic.js";
 import { buildStoreSchema } from "../utils/buildStoreSchema.js";
 
 /**
@@ -146,6 +147,14 @@ export async function detail(req, res) {
         // Fetch store (single fast lookup)
         const store = await StoresRepo.getBySlug(params.slug);
         if (!store) return { data: null, meta: { status: 404 } };
+
+        store.category_names = [];
+        if (store.category_id) {
+          store.category_names.push(getCategoryNameById(store.category_id));
+        }
+        if (store.subcategory_id) {
+          store.category_names.push(getCategoryNameById(store.subcategory_id));
+        }
 
         // Prepare parallel promises
         const couponsPromise = CouponsRepo.listForStore({
@@ -345,21 +354,6 @@ export async function detail(req, res) {
           answer: DOMPurify.sanitize(f.answer),
         }));
 
-        // const faqJsonLd = faqs.length
-        //   ? {
-        //       "@context": "https://schema.org",
-        //       "@type": "FAQPage",
-        //       mainEntity: faqs.map((f) => ({
-        //         "@type": "Question",
-        //         name: f.question,
-        //         acceptedAnswer: {
-        //           "@type": "Answer",
-        //           text: f.answer,
-        //         },
-        //       })),
-        //     }
-        //   : null;
-
         // Testimonials / ratings fallback (kept as before)
         let testimonials = [];
         let avgRating = null;
@@ -378,40 +372,6 @@ export async function detail(req, res) {
           locale: params.locale,
         });
         const breadcrumbs = StoresRepo.buildBreadcrumbs(store, params);
-        // const jsonld = {
-        //   organization: buildStoreJsonLd(store, params.origin),
-        //   breadcrumb: {
-        //     "@context": "https://schema.org",
-        //     "@type": "BreadcrumbList",
-        //     itemListElement: breadcrumbs.map((b, i) => ({
-        //       "@type": "ListItem",
-        //       position: i + 1,
-        //       name: b.name,
-        //       item: b.url,
-        //     })),
-        //   },
-        //   faq: faqJsonLd,
-        //   person: store.verifier
-        //     ? {
-        //         "@context": "https://schema.org",
-        //         "@type": "Person",
-        //         "@id": `${SITE_URL}/author/${store.verifier.slug}`,
-        //         name: store.verifier.name,
-        //         jobTitle: store.verifier.designation,
-        //         ...(store.verifier.avatar_url
-        //           ? {
-        //               image: {
-        //                 "@type": "ImageObject",
-        //                 url: store.verifier.avatar_url,
-        //               },
-        //             }
-        //           : {}),
-        //         worksFor: { "@id": `${SITE_URL}/#organization` },
-        //         sameAs: (store.verifier.same_as || []).map((s) => s.url),
-        //       }
-        //     : null,
-        // };
-
         const jsonld = buildStoreSchema({
           store, // has web_url now
           seo,
