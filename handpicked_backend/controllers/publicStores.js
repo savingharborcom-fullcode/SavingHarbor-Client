@@ -150,14 +150,14 @@ export async function detail(req, res) {
 
         store.category_names = [];
         if (store.category_id) {
-          const category = getCategoryNameById(store.category_id);
+          const category = await getCategoryNameById(store.category_id);
           if (category) store.category_names.push(category.name);
         }
+
         if (store.subcategory_id) {
-          const subcategory = getCategoryNameById(store.subcategory_id);
+          const subcategory = await getCategoryNameById(store.subcategory_id);
           if (subcategory) store.category_names.push(subcategory.name);
         }
-
         // Prepare parallel promises
         const couponsPromise = CouponsRepo.listForStore({
           merchantId: store.id,
@@ -427,8 +427,8 @@ export async function detail(req, res) {
             slug: store.slug,
             name: store.name,
             logo_url: store.logo_url,
-            web_url:store.web_url,
-            aff_url:store.aff_url,
+            web_url: store.web_url,
+            aff_url: store.aff_url,
             category_names: store.category_names || [],
             seo,
             breadcrumbs,
