@@ -271,12 +271,6 @@ export default function CouponReveal({ coupon, storeSlug, affiliateUrl  }) {
   const code = c.code ? String(c.code).trim() : null;
   const isDeal = (c.coupon_type || "") !== "coupon";
 
-  const affiliateUrl = c.merchant?.affl_url?.startsWith("http")
-    ? c.merchant.affl_url
-    : c.merchant?.web_url?.startsWith("http")
-      ? c.merchant.web_url
-      : null;
-
   const pushToast = (msg) => {
     const id = Date.now() + Math.random();
     setToasts((t) => [...t, { id, message: msg }]);

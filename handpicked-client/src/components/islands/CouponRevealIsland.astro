@@ -1,6 +1,6 @@
 ---
 import CouponReveal from "../couponReveal.jsx";
 
-const { coupon, storeSlug } = Astro.props;
+const { coupon, storeSlug, affiliateUrl } = Astro.props;
 ---
-<CouponReveal client:visible coupon={coupon} storeSlug={storeSlug} />
+<CouponReveal client:visible coupon={coupon} storeSlug={storeSlug} affiliateUrl={affiliateUrl}/>
