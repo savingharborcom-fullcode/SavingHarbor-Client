@@ -263,7 +263,7 @@ function CouponCard({ coupon: c, code, isDeal, revealed, onReveal }) {
   );
 }
 
-export default function CouponReveal({ coupon, storeSlug }) {
+export default function CouponReveal({ coupon, storeSlug, affiliateUrl  }) {
   const c = coupon || {};
   const [revealed, setRevealed] = useState(false);
   const [toasts, setToasts] = useState([]);
@@ -297,7 +297,10 @@ export default function CouponReveal({ coupon, storeSlug }) {
     }
 
     if (affiliateUrl) {
-      window.open(affiliateUrl, "_blank", "noopener,noreferrer");
+      setTimeout(
+        () => window.open(affiliateUrl, "_blank", "noopener,noreferrer"),
+        100,
+      );
     }
   };
 

@@ -312,7 +312,7 @@ const visitUrl = store?.aff_url || store?.web_url || null;
                 <div class="flex flex-col gap-3">
                   {store.coupons.items.map((c) => (
                     <div class="w-full card-base p-0">
-                      <CouponRevealIsland client:visible coupon={c} storeSlug={store.slug} />
+                      <CouponRevealIsland client:visible coupon={c} storeSlug={store.slug} affiliateUrl={visitUrl}/>
                     </div>
                   ))}
                 </div>
