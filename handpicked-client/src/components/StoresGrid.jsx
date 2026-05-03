@@ -33,36 +33,37 @@ const ALPHABET = [
 const INITIAL_LOAD = 100;
 const LOAD_MORE = 50;
 
-export default function StoresGrid({ apiUrl, categorySlug }) {
-  const [stores, setStores] = useState([]);
-  const [selectedLetter, setSelectedLetter] = useState("0-9"); // Default to 0-9
-  const [loading, setLoading] = useState(true);
+export default function StoresGrid({
+  apiUrl,
+  categorySlug,
+  initialStores = [],
+  initialTotal = 0,
+  initialCursor = null,
+  initialLetter = "A",
+}) {
+  const [stores, setStores] = useState(initialStores);
+  const [selectedLetter, setSelectedLetter] = useState(initialLetter);
+  const [loading, setLoading] = useState(false); // false: SSR data already present
   const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [cursor, setCursor] = useState(null);
-  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(!!initialCursor);
+  const [cursor, setCursor] = useState(initialCursor);
+  const [total, setTotal] = useState(initialTotal);
   const [error, setError] = useState(null);
 
   const observerRef = useRef(null);
   const loadMoreRef = useRef(null);
 
-  // Fetch stores from API
   const fetchStores = async (letter, currentCursor = null, append = false) => {
     try {
       setError(null);
-
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
+      append ? setLoadingMore(true) : setLoading(true);
 
       const limit = currentCursor === null ? INITIAL_LOAD : LOAD_MORE;
 
-      // // Build URL with proper parameters
       let url = `${apiUrl}/stores?limit=${limit}&letter=${encodeURIComponent(letter)}`;
-      if (categorySlug) url += `&category=${encodeURIComponent(categorySlug)}`; // ADD THIS
+      if (categorySlug) url += `&category=${encodeURIComponent(categorySlug)}`;
       if (currentCursor) url += `&cursor=${encodeURIComponent(currentCursor)}`;
+
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -78,15 +79,10 @@ export default function StoresGrid({ apiUrl, categorySlug }) {
       }
 
       const newStores = data.data;
-      const totalCount = data.meta?.total || 0;
-      const nextCursor = data.meta?.nextCursor || null;
+      const totalCount = data.meta?.total ?? 0;
+      const nextCursor = data.meta?.nextCursor ?? null;
 
-      if (append) {
-        setStores((prev) => [...prev, ...newStores]);
-      } else {
-        setStores(newStores);
-      }
-
+      setStores(append ? (prev) => [...prev, ...newStores] : newStores);
       setTotal(totalCount);
       setHasMore(!!nextCursor);
       setCursor(nextCursor);
@@ -100,10 +96,8 @@ export default function StoresGrid({ apiUrl, categorySlug }) {
     }
   };
 
-  // Handle letter change
   const handleLetterChange = (letter) => {
     if (letter === selectedLetter) return;
-
     setSelectedLetter(letter);
     setCursor(null);
     setHasMore(true);
@@ -111,44 +105,34 @@ export default function StoresGrid({ apiUrl, categorySlug }) {
     fetchStores(letter, null, false);
   };
 
-  // Load more stores (infinite scroll)
   const loadMore = useCallback(() => {
     if (!loadingMore && hasMore && cursor) {
       fetchStores(selectedLetter, cursor, true);
     }
   }, [loadingMore, hasMore, selectedLetter, cursor]);
 
-  // Intersection Observer for infinite scroll
+  // Infinite scroll observer
   useEffect(() => {
-    if (!loadMoreRef.current || !hasMore || loadingMore) {
-      return;
-    }
+    if (!loadMoreRef.current || !hasMore || loadingMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore();
-        }
+        if (entries[0].isIntersecting) loadMore();
       },
-      {
-        threshold: 0.1,
-        rootMargin: "100px",
-      },
+      { threshold: 0.1, rootMargin: "100px" },
     );
 
     observer.observe(loadMoreRef.current);
     observerRef.current = observer;
 
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
+    return () => observerRef.current?.disconnect();
   }, [hasMore, loadingMore, loadMore]);
 
-  // Initial load with 0-9
+  // If SSR gave us no data (edge case), fetch on mount
   useEffect(() => {
-    fetchStores("0-9", null, false);
+    if (initialStores.length === 0) {
+      fetchStores(initialLetter, null, false);
+    }
   }, []);
 
   return (
@@ -181,13 +165,13 @@ export default function StoresGrid({ apiUrl, categorySlug }) {
           <span className="text-red-600">Error: {error}</span>
         ) : (
           <span>
-            Showing {stores.length} of {total} stores starting with "
-            {selectedLetter}"
+            Showing {stores.length} of {total} stores starting with &quot;
+            {selectedLetter}&quot;
           </span>
         )}
       </div>
 
-      {/* Stores Grid - 6 columns on large screens, 5 on medium */}
+      {/* Stores Grid */}
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4">
           {Array.from({ length: 12 }).map((_, i) => (
@@ -215,7 +199,6 @@ export default function StoresGrid({ apiUrl, categorySlug }) {
                 href={`/stores/${store.slug}`}
                 className="group block rounded-lg bg-white border border-gray-200 p-3 transition-all hover:shadow-lg hover:border-brand-primary"
               >
-                {/* Logo - Smaller aspect ratio */}
                 <div className="aspect-square mb-2 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
                   {store.logo_url ? (
                     <img
@@ -231,12 +214,10 @@ export default function StoresGrid({ apiUrl, categorySlug }) {
                   )}
                 </div>
 
-                {/* Store Name - Smaller text */}
                 <h3 className="text-xs font-semibold text-gray-900 text-center mb-1 group-hover:text-brand-primary transition-colors line-clamp-2">
                   {store.name}
                 </h3>
 
-                {/* Offer Count - Smaller text */}
                 {store.stats?.active_coupons !== undefined && (
                   <p className="text-[10px] text-gray-500 text-center">
                     {store.stats.active_coupons}{" "}
@@ -247,7 +228,6 @@ export default function StoresGrid({ apiUrl, categorySlug }) {
             ))}
           </div>
 
-          {/* Infinite Scroll Trigger */}
           {hasMore && (
             <div ref={loadMoreRef} className="mt-8 flex justify-center py-8">
               {loadingMore ? (
@@ -266,17 +246,16 @@ export default function StoresGrid({ apiUrl, categorySlug }) {
             </div>
           )}
 
-          {/* End Message */}
           {!hasMore && stores.length > 0 && (
             <div className="mt-8 text-center text-gray-500 py-4">
-              <p>You've reached the end of the list</p>
+              <p>You&apos;ve reached the end of the list</p>
             </div>
           )}
         </>
       ) : (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">
-            No stores found starting with "{selectedLetter}"
+            No stores found starting with &quot;{selectedLetter}&quot;
           </p>
         </div>
       )}

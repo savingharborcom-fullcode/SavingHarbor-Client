@@ -5,24 +5,73 @@ import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
 import StoresGrid from "../../components/StoresGrid.jsx";
 
-const pageTitle = "Stores - Saving Harbor";
-const pageDesc = "Explore verified stores with handpicked coupons.";
+const pageTitle = "All Stores - Saving Harbor | Verified Coupons & Deals";
+const pageDesc =
+  "Browse 20,000+ verified stores with handpicked coupons and deals. Find discounts from your favourite brands.";
 const canonical = "https://www.savingharbor.com/stores";
 
-// Get API URL from environment or use default
 const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
+
+// SSR: fetch initial stores server-side so Googlebot sees real <a> tags in HTML
+let initialStores = [];
+let initialTotal = 0;
+let initialCursor = null;
+const initialLetter = "A";
+
+try {
+  const res = await fetch(
+    `${apiUrl}/stores?limit=100&letter=${encodeURIComponent(initialLetter)}`,
+    { headers: { "Content-Type": "application/json" } },
+  );
+
+  if (res.ok) {
+    const data = await res.json();
+    initialStores = data.data ?? [];
+    initialTotal = data.meta?.total ?? 0;
+    initialCursor = data.meta?.nextCursor ?? null;
+  }
+} catch (e) {
+  // Fail silently — React component handles client-side fallback
+  console.error("[stores/index.astro] SSR fetch failed:", e);
+}
 ---
 
 <Base meta={{ title: pageTitle, description: pageDesc, canonical }}>
   <Header />
   <main class="container mx-auto px-4 py-10">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-brand-primary">Stores</h1>
+      <h1 class="text-3xl font-bold text-brand-primary">All Stores</h1>
       <p class="mt-2 text-base text-gray-600 max-w-2xl">{pageDesc}</p>
     </div>
 
-    <!-- React component handles all filtering, infinite scroll, and store display -->
-    <StoresGrid client:load apiUrl={apiUrl} categorySlug={null} />
+    <!--
+      SSR-rendered fallback links for Googlebot.
+      These are hidden visually but present in raw HTML.
+      React hydration replaces with full interactive grid.
+    -->
+    {
+      initialStores.length > 0 && (
+        <noscript>
+          <ul class="sr-only">
+            {initialStores.map((store : any) => (
+              <li>
+                <a href={`/stores/${store.slug}`}>{store.name}</a>
+              </li>
+            ))}
+          </ul>
+        </noscript>
+      )
+    }
+
+    <StoresGrid
+      client:load
+      apiUrl={apiUrl}
+      categorySlug={null}
+      initialStores={initialStores}
+      initialTotal={initialTotal}
+      initialCursor={initialCursor}
+      initialLetter={initialLetter}
+    />
   </main>
   <Footer />
 </Base>
