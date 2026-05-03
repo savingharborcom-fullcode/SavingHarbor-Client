@@ -96,7 +96,7 @@ export function renderCouponCardHtml(item = {}) {
 
   const endsAt = item.ends_at
     ? escapeHtml(
-        new Date(item.ends_at).toLocaleDateString(undefined, {
+        new Date(item.ends_at).toLocaleDateString("en-US", {
           year: "numeric",
           month: "short",
           day: "numeric",

@@ -4,7 +4,6 @@
    - Descriptions: ExpandableText islands inline with View more… / Show less
    - Sidebar: sticky at top (unchanged)
 */
-0
 import Base from "../../layouts/Base.astro";
 import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
@@ -43,7 +42,7 @@ type StoreDetail = {
   id: number | string;
   slug: string;
   name: string;
-  verifier_id?:number | string | null;
+  verifier_id?: number | string | null;
   logo_url?: string | null;
   web_url?: string | null;
   aff_url?: string | null;
@@ -82,7 +81,7 @@ type StoreDetail = {
     designation: string;
     same_as?: { type: string; url: string }[];
     created_at: string;
-  }
+  };
 };
 
 type StoreDetailResponse = {
@@ -95,18 +94,30 @@ type StoreDetailResponse = {
   };
 };
 
+// Seeded deterministic pseudo-random (0–1)
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+// Convert slug to numeric seed
+function slugToSeed(slug: string): number {
+  return slug.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+}
+
 const { slug } = Astro.params as { slug: string };
 
 let resp: StoreDetailResponse | null = null;
 try {
-  resp = await api.get<StoreDetailResponse>(`/stores/${slug}?limit100`, {}, { retries: 2, timeout: 8000 });
+  // Fixed: was ?limit100 (missing =)
+  resp = await api.get<StoreDetailResponse>(`/stores/${slug}?limit=100`, {}, { retries: 2, timeout: 8000 });
 } catch (e) {
   console.error("Error fetching store detail:", e);
   resp = { data: null, meta: { title: "Store - Saving Harbor", description: "Store details unavailable." } };
 }
 const store = resp?.data || null;
 
-//Dynamic breadcrumbs if referred from category page
+// Dynamic breadcrumbs if referred from category page
 const refType = Astro.url.searchParams.get("ref");
 const parentSlug = Astro.url.searchParams.get("parent");
 const subSlug = Astro.url.searchParams.get("sub");
@@ -141,31 +152,32 @@ const canonical = meta?.canonical;
 const jsonld = meta?.jsonld;
 
 const safeSideHtml = store?.about_html || null;
-
-const safeDescriptionHtml = store?.description_html|| null;
+const safeDescriptionHtml = store?.description_html || null;
 
 const activeCoupons = store?.stats?.active_coupons || 0;
 const minSavings = activeCoupons * 100;
 const maxSavings = minSavings + 100;
 
+// Deterministic values seeded from slug — same output on every request
+const seed = store ? slugToSeed(store.slug) : 0;
+
 const totalSavings =
   activeCoupons > 0
-    ? Math.floor(Math.random() * (maxSavings - minSavings + 1)) + minSavings : 0;
+    ? Math.floor(seededRandom(seed + 2) * (maxSavings - minSavings + 1)) + minSavings
+    : 0;
 
-// assume merchant already fetched
 const verifier = store?.verifier;
 
-const lastVerified =
-  verifier? `${Math.floor(Math.random() * 11) + 2} hours ago`
-    : undefined;
+const lastVerified = verifier
+  ? `${Math.floor(seededRandom(seed) * 11) + 2} hours ago`
+  : undefined;
 
-const successRate = Math.floor(Math.random() * 7) + 92; 
+const successRate = Math.floor(seededRandom(seed + 1) * 7) + 92;
 
-// server-side fetch
-let proofs = [];
+// Server-side fetch proofs
+let proofs: { image_url: string }[] = [];
 try {
-  let res : any;
-  res = await api.get(`/stores/${store?.id}/proofs`);
+  const res = await api.get<{ proofs: { image_url: string }[] }>(`/stores/${store?.id}/proofs`);
   console.log("proofs received ::: ", res);
   proofs = res.proofs || [];
 } catch (e) {
@@ -174,20 +186,20 @@ try {
 
 if (jsonld?.["@graph"]) {
   const storeUrl = `https://www.savingharbor.com/stores/${store?.slug}`;
- 
+
   // Patch #savings-impact value
   const savingsNode = jsonld["@graph"].find(
     (n: any) => n["@id"]?.endsWith("#savings-impact")
   );
   if (savingsNode) savingsNode.value = String(totalSavings);
- 
+
   // Remove any existing proof nodes built with empty/stale data on the backend
   jsonld["@graph"] = jsonld["@graph"].filter(
     (n: any) => !n["@id"]?.includes("#verification-proof-")
   );
- 
+
   // Inject one node per proof (indexed)
-  (proofs || []).forEach((proof: { image_url: any; }, i: number) => {
+  proofs.forEach((proof, i) => {
     if (!proof?.image_url) return;
     jsonld["@graph"].push({
       "@type": "ImageObject",
@@ -200,7 +212,8 @@ if (jsonld?.["@graph"]) {
   });
 }
 
-const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
+// Fixed: no more (store as any) casts — aff_url and web_url are in StoreDetail type
+const visitUrl = store?.aff_url || store?.web_url || null;
 ---
 
 <style>
@@ -222,7 +235,7 @@ const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
     {store ? (
       <>
         <Breadcrumbs breadcrumbs={breadcrumbs} />
-        
+
         <!-- Hero: left column wider (flexible) + right column for descriptions -->
         <section class="mt-4">
           <div class="grid grid-cols-1 md:grid-cols-[minmax(220px,420px)_1fr] gap-2 md:gap-6 items-start">
@@ -260,8 +273,6 @@ const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
                     <div class="mt-2">
                       <span class="pill pill-green">
                         All {store.coupons?.total || 0} coupons loaded
-                        {/* {store.stats.active_coupons}{" "}
-                        {store.stats.active_coupons === 1 ? "active coupon" : "active coupons"} */}
                       </span>
                     </div>
                   )}
@@ -273,7 +284,7 @@ const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
               </div>
             </div>
 
-            <!-- RIGHT: descriptions — ensure min-w-0 so it can shrink for truncation -->
+            <!-- RIGHT: descriptions -->
             <div class="min-w-0">
               {meta.description && (
                 <ExpandableText
@@ -284,16 +295,6 @@ const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
                   className="text-gray-900 text-[17px] leading-relaxed mb-3 font-semibold"
                 />
               )}
-
-              {/* {safeSideHtml && (
-                <ExpandableText
-                  client:load
-                  html={safeSideHtml}
-                  id="store-side-desc"
-                  initialLines={2}
-                  className="prose max-w-none text-gray-700"
-                />
-              )} */}
             </div>
           </div>
         </section>
@@ -302,7 +303,8 @@ const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
           <!-- Main content -->
           <div class="lg:col-span-2 space-y-8">
             <!-- Merchant proofs -->
-            <MerchantProofsIsland client:visible proofs={proofs} visitUrl={visitUrl}/>
+            <MerchantProofsIsland client:visible proofs={proofs as any} visitUrl={visitUrl as any} />
+
             <!-- Coupons -->
             <section id="coupons">
               <h2 class="section-heading">Coupons & Deals</h2>
@@ -318,6 +320,7 @@ const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
                 <p class="text-gray-500">No active coupons at the moment.</p>
               )}
             </section>
+
             <!-- About Store -->
             <section id="about-section" class="card-base p-6">
               <h2 class="section-heading">About this store</h2>
@@ -353,7 +356,7 @@ const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
           <!-- Sidebar -->
           <aside class="lg:col-span-1 lg:sticky lg:top-4 lg:self-start space-y-6">
             {verifier && (
-            <div class="sidebar-box">
+              <div class="sidebar-box">
                 <VerifiedBadge
                   name={verifier.name}
                   designation={verifier.designation}
@@ -364,7 +367,7 @@ const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
                   verifyingSince={verifier.verifying_since}
                   sameAs={verifier?.same_as ?? []}
                 />
-            </div>
+              </div>
             )}
             <div class="sidebar-box">
               <SavingsImpact
@@ -381,7 +384,6 @@ const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
             <div class="sidebar-box">
               <TrendingOffersCompact client:load offers={store.trending_offers} storeSlug={store.slug} />
             </div>
-            {/* <div class="sidebar-box"> */}
             <div class="sidebar-box">
               <div class="card-base p-4">
                 <h3 class="text-lg font-semibold text-brand-secondary mb-3">Get updates</h3>
@@ -391,7 +393,7 @@ const visitUrl = (store as any)?.aff_url || (store as any)?.web_url || null;
             <div class="sidebar-box">
               <FeedbackForm client:load storeSlug={store.slug} />
             </div>
-            
+
             {store.trust_text && (
               <div class="sidebar-box text-sm text-gray-700">
                 {store.trust_text}
