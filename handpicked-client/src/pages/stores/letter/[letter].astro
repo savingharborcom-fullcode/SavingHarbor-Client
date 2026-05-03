@@ -1,0 +1,112 @@
+---
+// src/pages/stores/letter/[letter].astro
+import Base from "../../../layouts/Base.astro";
+import Header from "../../../components/Header.astro";
+import Footer from "../../../components/Footer.astro";
+import StoresGrid from "../../../components/StoresGrid.tsx";
+
+const VALID_LETTERS = ["0-9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"];
+
+const { letter } = Astro.params;
+
+// Guard invalid letters
+if (!letter || !VALID_LETTERS.includes(letter.toLowerCase())) {
+  return Astro.redirect("/stores", 301);
+}
+
+const displayLetter = letter === "0-9" ? "0-9" : letter.toUpperCase();
+const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
+
+const pageTitle = `Stores Starting with "${displayLetter}" - Saving Harbor | Coupons & Deals`;
+const pageDesc = `Browse verified stores starting with "${displayLetter}". Find handpicked coupons and deals.`;
+const canonical = `https://www.savingharbor.com/stores/letter/${letter}`;
+
+let initialStores: any[] = [];
+let initialTotal = 0;
+let initialCursor = null;
+
+try {
+  const res = await fetch(
+    `${apiUrl}/stores?limit=100&letter=${encodeURIComponent(displayLetter)}`,
+    { headers: { "Content-Type": "application/json" } },
+  );
+
+  if (res.ok) {
+    const data = await res.json();
+    initialStores = data.data ?? [];
+    initialTotal = data.meta?.total ?? 0;
+    initialCursor = data.meta?.nextCursor ?? null;
+  }
+} catch (e) {
+  console.error(`[stores/letter/${letter}.astro] SSR fetch failed:`, e);
+}
+
+const ALPHABET = ["0-9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+---
+
+<Base meta={{ title: pageTitle, description: pageDesc, canonical }}>
+  <Header />
+  <main class="container mx-auto px-4 py-10">
+    <div class="mb-8">
+      <nav aria-label="Breadcrumb" class="text-sm text-gray-500 mb-4">
+        <a href="/stores" class="hover:text-brand-primary">All Stores</a>
+        <span class="mx-2">/</span>
+        <span class="text-gray-900 font-medium">{displayLetter}</span>
+      </nav>
+
+      <h1 class="text-3xl font-bold text-brand-primary">
+        Stores Starting with "{displayLetter}"
+      </h1>
+      <p class="mt-2 text-base text-gray-600 max-w-2xl">{pageDesc}</p>
+    </div>
+
+    <!-- A-Z nav — Googlebot can crawl all letter pages from here too -->
+    <nav aria-label="Browse stores by letter" class="mb-6">
+      <ul class="flex flex-wrap gap-2">
+        {ALPHABET.map((l) => {
+          const href = `/stores/letter/${l === "0-9" ? "0-9" : l.toLowerCase()}`;
+          const isActive = l === displayLetter;
+          return (
+            <li>
+              <a
+                href={href}
+                aria-current={isActive ? "page" : undefined}
+                class={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-brand-primary text-white shadow-md pointer-events-none"
+                    : "bg-gray-100 text-gray-700 hover:bg-brand-primary hover:text-white"
+                }`}
+              >
+                {l}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+
+    <!-- SSR store links for Googlebot -->
+    {initialStores.length > 0 && (
+      <noscript>
+        <ul class="sr-only">
+          {initialStores.map((store: any) => (
+            <li>
+              <a href={`/stores/${store.slug}`}>{store.name}</a>
+            </li>
+          ))}
+        </ul>
+      </noscript>
+    )}
+
+    <StoresGrid
+      client:load
+      apiUrl={apiUrl}
+      categorySlug={null}
+      initialStores={initialStores}
+      initialTotal={initialTotal}
+      initialCursor={initialCursor}
+      initialLetter={displayLetter}
+    />
+  </main>
+  <Footer />
+</Base>

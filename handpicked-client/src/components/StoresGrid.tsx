@@ -1,4 +1,4 @@
-// src/components/StoresGrid.jsx
+// src/components/StoresGrid.tsx
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const ALPHABET = [
@@ -33,6 +33,23 @@ const ALPHABET = [
 const INITIAL_LOAD = 100;
 const LOAD_MORE = 50;
 
+interface Store {
+  id: string;
+  slug: string;
+  name: string;
+  logo_url?: string;
+  stats?: { active_coupons: number };
+}
+
+interface Props {
+  apiUrl: string;
+  categorySlug?: string | null;
+  initialStores?: Store[];
+  initialTotal?: number;
+  initialCursor?: string | null;
+  initialLetter?: string;
+}
+
 export default function StoresGrid({
   apiUrl,
   categorySlug,
@@ -40,20 +57,24 @@ export default function StoresGrid({
   initialTotal = 0,
   initialCursor = null,
   initialLetter = "A",
-}) {
-  const [stores, setStores] = useState(initialStores);
-  const [selectedLetter, setSelectedLetter] = useState(initialLetter);
-  const [loading, setLoading] = useState(false); // false: SSR data already present
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(!!initialCursor);
-  const [cursor, setCursor] = useState(initialCursor);
-  const [total, setTotal] = useState(initialTotal);
-  const [error, setError] = useState(null);
+}: Props) {
+  const [stores, setStores] = useState<Store[]>(initialStores);
+  const [selectedLetter, setSelectedLetter] = useState<string>(initialLetter);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(!!initialCursor);
+  const [cursor, setCursor] = useState<string | null>(initialCursor);
+  const [total, setTotal] = useState<number>(initialTotal);
+  const [error, setError] = useState<string | null>(null);
 
-  const observerRef = useRef(null);
-  const loadMoreRef = useRef(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  const fetchStores = async (letter, currentCursor = null, append = false) => {
+  const fetchStores = async (
+    letter: string,
+    currentCursor: string | null = null,
+    append: boolean = false,
+  ) => {
     try {
       setError(null);
       append ? setLoadingMore(true) : setLoading(true);
@@ -78,17 +99,18 @@ export default function StoresGrid({
         throw new Error("Invalid API response format");
       }
 
-      const newStores = data.data;
-      const totalCount = data.meta?.total ?? 0;
-      const nextCursor = data.meta?.nextCursor ?? null;
+      const newStores: Store[] = data.data;
+      const totalCount: number = data.meta?.total ?? 0;
+      const nextCursor: string | null = data.meta?.nextCursor ?? null;
 
       setStores(append ? (prev) => [...prev, ...newStores] : newStores);
       setTotal(totalCount);
       setHasMore(!!nextCursor);
       setCursor(nextCursor);
-    } catch (err) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
       console.error("Error fetching stores:", err);
-      setError(err.message);
+      setError(message);
       setHasMore(false);
     } finally {
       setLoading(false);
@@ -96,7 +118,7 @@ export default function StoresGrid({
     }
   };
 
-  const handleLetterChange = (letter) => {
+  const handleLetterChange = (letter: string) => {
     if (letter === selectedLetter) return;
     setSelectedLetter(letter);
     setCursor(null);
@@ -128,7 +150,7 @@ export default function StoresGrid({
     return () => observerRef.current?.disconnect();
   }, [hasMore, loadingMore, loadMore]);
 
-  // If SSR gave us no data (edge case), fetch on mount
+  // Fallback fetch if SSR returned nothing
   useEffect(() => {
     if (initialStores.length === 0) {
       fetchStores(initialLetter, null, false);

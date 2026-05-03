@@ -3,17 +3,18 @@
 import Base from "../../layouts/Base.astro";
 import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
-import StoresGrid from "../../components/StoresGrid.jsx";
+import StoresGrid from "../../components/StoresGrid.tsx";
 
 const pageTitle = "All Stores - Saving Harbor | Verified Coupons & Deals";
 const pageDesc =
   "Browse 20,000+ verified stores with handpicked coupons and deals. Find discounts from your favourite brands.";
 const canonical = "https://www.savingharbor.com/stores";
 
+const ALPHABET = ["0-9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+
 const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
 
-// SSR: fetch initial stores server-side so Googlebot sees real <a> tags in HTML
-let initialStores = [];
+let initialStores: any[] = [];
 let initialTotal = 0;
 let initialCursor = null;
 const initialLetter = "A";
@@ -31,7 +32,6 @@ try {
     initialCursor = data.meta?.nextCursor ?? null;
   }
 } catch (e) {
-  // Fail silently — React component handles client-side fallback
   console.error("[stores/index.astro] SSR fetch failed:", e);
 }
 ---
@@ -45,29 +45,43 @@ try {
     </div>
 
     <!--
-      SSR-rendered fallback links for Googlebot.
-      These are hidden visually but present in raw HTML.
-      React hydration replaces with full interactive grid.
+      Static A-Z navigation — visible to Googlebot in raw HTML.
+      Each letter links to its own SSR page (/stores/letter/a etc.)
+      giving Googlebot a crawlable path to all 26 letter indexes.
     -->
-    {
-      initialStores.length > 0 && (
-        <noscript>
-          <ul class="sr-only">
-            {initialStores.map((store : any) => (
-              <li>
-                <a href={`/stores/${store.slug}`}>{store.name}</a>
-              </li>
-            ))}
-          </ul>
-        </noscript>
-      )
-    }
+    <nav aria-label="Browse stores by letter" class="mb-6">
+      <ul class="flex flex-wrap gap-2">
+        {ALPHABET.map((letter) => (
+          <li>
+            <a
+              href={`/stores/letter/${letter === "0-9" ? "0-9" : letter.toLowerCase()}`}
+              class="px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-brand-primary hover:text-white transition-all"
+            >
+              {letter}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <!-- SSR store links for Googlebot -->
+    {initialStores.length > 0 && (
+      <noscript>
+        <ul class="sr-only">
+          {initialStores.map((store: any) => (
+            <li>
+              <a href={`/stores/${store.slug}`}>{store.name}</a>
+            </li>
+          ))}
+        </ul>
+      </noscript>
+    )}
 
     <StoresGrid
       client:load
       apiUrl={apiUrl}
       categorySlug={null}
-      initialStores={initialStores}
+      initialStores={initialStores as any[]}
       initialTotal={initialTotal}
       initialCursor={initialCursor}
       initialLetter={initialLetter}
