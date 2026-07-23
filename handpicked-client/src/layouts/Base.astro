@@ -25,39 +25,14 @@ const GA_ID = import.meta.env.PUBLIC_GA_ID || "G-WYE5L7QPS4";
     <slot />
     {
       GA_ID && (
-        <script
-          set:html={`
-          (function(){
-            var GA_ID='${GA_ID}';  // ← Fix: use env var
-            if(!GA_ID) return;
-            if (navigator.doNotTrack === '1' || navigator.doNotTrack === 'yes') return;
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
 
-            var inited = false;
-            function init() {
-              if (inited) return; inited = true;
-              var s = document.createElement('script');
-              s.async = true;
-              s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
-              s.crossOrigin = 'anonymous';
-              document.head.appendChild(s);
-              s.addEventListener('load', function(){
-                try{ gtag('js', new Date()); gtag('config', GA_ID, { send_page_view: false }); gtag('event','page_view',{page_location:location.href}); }catch(e){}
-              });
-            }
-
-            // only load on first meaningful interaction
-            var evs=['pointerdown','keydown','touchstart','scroll'];
-            function onFirst(){ init(); remove(); }
-            function add(){ evs.forEach(e=>window.addEventListener(e,onFirst,{once:true,passive:true})); }
-            function remove(){ evs.forEach(e=>window.removeEventListener(e,onFirst)); }
-            add();
-
-            // fallback: only load if session remains active for 10s (avoids Lighthouse fetch)
-            setTimeout(function(){ if(!inited) init(); }, 10000);
-          })();
-
-        `}
-        />
+          gtag('config', ${GA_ID});
+        </script>
       )
     }
   </body>
