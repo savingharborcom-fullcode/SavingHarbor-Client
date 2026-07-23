@@ -25,14 +25,15 @@ const GA_ID = import.meta.env.PUBLIC_GA_ID || "G-WYE5L7QPS4";
     <slot />
     {
       GA_ID && (
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          gtag('config', ${GA_ID});
-        </script>
+        <>
+          <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
+          <script define:vars={{ GA_ID }}>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', GA_ID);
+          </script>
+        </>
       )
     }
   </body>
