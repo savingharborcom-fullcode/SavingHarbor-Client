@@ -1,0 +1,25 @@
+# SavingHarbor
+
+> SavingHarbor is a coupon and deals platform with 1000 verified merchant stores across 10+ categories. Coupons are tested by hand before publishing.
+
+## Key Sections
+- [All Stores (A-Z)](https://www.savingharbor.com/stores): Full merchant directory
+- [Categories](https://www.savingharbor.com/categories): Deals organized by category
+- [Today's Coupons](https://www.savingharbor.com/coupons): Currently active codes and deals
+- [How It Works](https://www.savingharbor.com/how-it-works): Coupon verification process
+- [Blog](https://www.savingharbor.com/blogs): Shopping guides and savings tips
+
+## Top Categories
+- [Clothing & Accessories](https://www.savingharbor.com/category/clothing-and-accessories)
+- [Health & Wellness](https://www.savingharbor.com/category/health-and-wellness)
+- [Home & Garden](https://www.savingharbor.com/category/home-and-garden)
+- [Services](https://www.savingharbor.com/category/services)
+- [Software](https://www.savingharbor.com/category/software)
+- [Sports & Outdoor](https://www.savingharbor.com/category/sports-and-outdoor)
+- [Electronics](https://www.savingharbor.com/category/electronics)
+- [Beauty](https://www.savingharbor.com/category/beauty)
+- [Arts & Crafts](https://www.savingharbor.com/category/arts-and-crafts)
+- [Food & Beverages](https://www.savingharbor.com/category/food-and-beverages)
+
+## Sitemap
+https://www.savingharbor.com/sitemap.xml
