@@ -88,7 +88,7 @@ ${categoryLines}
 ${SITE_URL}/sitemap.xml
 `;
 
-  fs.writeFileSync("./llms.txt", content, "utf-8");
+  fs.writeFileSync("./public/llms.txt", content, "utf-8");
   console.log(`llms.txt written — ${ranked.length} categories, ${totalMerchants} merchants`);
 }
 
