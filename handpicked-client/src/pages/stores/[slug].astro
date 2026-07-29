@@ -176,14 +176,15 @@ const successRate = Math.floor(seededRandom(seed + 1) * 7) + 92;
 
 // Server-side fetch proofs
 let proofs: { image_url: string }[] = [];
-try {
-  const res = await api.get<{ proofs: { image_url: string }[] }>(`/stores/${store?.id}/proofs`);
-  console.log("proofs received ::: ", res);
-  proofs = res.proofs || [];
-} catch (e) {
-  console.error("Error fetching proofs:", e);
+if(store?.id) {
+  try {
+    const res = await api.get<{ proofs: { image_url: string }[] }>(`/stores/${store?.id}/proofs`);
+    console.log("proofs received ::: ", res);
+    proofs = res.proofs || [];
+  } catch (e) {
+    console.error("Error fetching proofs:", e);
+  }
 }
-
 if (jsonld?.["@graph"]) {
   const storeUrl = `https://www.savingharbor.com/stores/${store?.slug}`;
 

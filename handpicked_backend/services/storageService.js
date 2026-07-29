@@ -1,4 +1,11 @@
+import sharp from "sharp";
 import { supabase } from "../dbhelper/dbclient.js";
+
+// Logos are never displayed larger than this anywhere in the client.
+// Resizing here (once, at upload) is what actually cuts egress -
+// Supabase's paid Image Transformations add-on isn't in use, so raw
+// bytes are what gets served on every page load.
+const MAX_LOGO_DIMENSION = 300;
 
 /**
  * Upload a file buffer to any bucket/folder
@@ -11,13 +18,31 @@ import { supabase } from "../dbhelper/dbclient.js";
 export async function uploadImageBuffer(bucket, folder, buffer, filename, mimetype) {
   const now = new Date();
   const datePath = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const safeName = String(filename || "file").toLowerCase().replace(/\s+/g, "-");
-  const path = `${folder}/${datePath}/${Date.now()}-${safeName}`;
+  const baseName = String(filename || "file").toLowerCase().replace(/\s+/g, "-").replace(/\.[^.]+$/, "");
+
+  let outBuffer = buffer;
+  let outMimetype = mimetype;
+  let outExt = (String(filename || "").match(/\.[^.]+$/)?.[0]) || "";
+  const isImage = /^image\/(png|jpe?g|webp|gif)$/.test(mimetype || "");
+  if (isImage) {
+    try {
+      outBuffer = await sharp(buffer)
+        .resize({ width: MAX_LOGO_DIMENSION, height: MAX_LOGO_DIMENSION, fit: "inside", withoutEnlargement: true })
+        .webp({ quality: 82 })
+        .toBuffer();
+      outMimetype = "image/webp";
+      outExt = ".webp";
+    } catch {
+      // Fall back to original buffer/mimetype/ext if sharp fails (e.g. corrupt input)
+    }
+  }
+  const path = `${folder}/${datePath}/${Date.now()}-${baseName}${outExt}`;
 
   const { error: uploadError } = await supabase.storage
     .from(bucket)
-    .upload(path, buffer, {
-      contentType: mimetype || "application/octet-stream",
+    .upload(path, outBuffer, {
+      contentType: outMimetype || mimetype || "application/octet-stream",
+      cacheControl: "31536000", // path is timestamped -> content is immutable, safe to cache 1yr
       upsert: false,
     });
 
