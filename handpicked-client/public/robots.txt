@@ -16,6 +16,13 @@ Disallow: /register/
 # Prevent indexing of only search/filter API calls
 Disallow: /public/v1/
 
+User-agent: PetalBot
+Disallow: /
+
+User-agent: Bingbot
+Crawl-delay: 10
+Disallow: /api/
+
 # Sitemap reference
 Sitemap: https://www.savingharbor.com/sitemap-index.xml
 
