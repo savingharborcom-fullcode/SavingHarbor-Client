@@ -41,9 +41,10 @@ const pageDesc =
   subcategoryData.subcategory.meta_description ||
   `Browse ${subcategoryData.subcategory.name} stores and find the best coupons and deals.`;
 const canonical = `https://www.savingharbor.com/categories/${parentSlug}/${subSlug}`;
+const noindex = !subcategoryData.merchants || subcategoryData.merchants.length === 0;
 ---
 
-<Base meta={{ title: pageTitle, description: pageDesc, canonical }}>
+<Base meta={{ title: pageTitle, description: pageDesc, canonical, noindex }}>
   <Header />
 
   <main class="container mx-auto px-4 py-10">

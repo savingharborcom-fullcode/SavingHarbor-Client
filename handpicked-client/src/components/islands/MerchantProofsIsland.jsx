@@ -72,21 +72,21 @@ export default function MerchantProofsIsland({
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {visibleProofs.map((p, idx) => (
             <button
-              key={p.id}
+              key={p.id || idx}
               onClick={() => openLightbox(idx)}
               className="relative block rounded-xl p-[2px] bg-gradient-to-br from-[rgba(255,90,31,0.4)] via-transparent to-[rgba(184,242,0,0.5)] hover:shadow-md hover:scale-[1.02] transition-all duration-300"
-              aria-label={`Open proof ${p.filename}`}
+              aria-label={`Open proof ${p.filename || 'screenshot'}`}
             >
               <div className="bg-white rounded-xl overflow-hidden m-[1px]">
                 <img
                   src={p.image_url}
-                  alt={p.filename}
+                  alt={p.filename || "Verified coupon checkout proof"}
                   loading="lazy"
                   decoding="async"
                   className="object-cover w-full h-32 sm:h-36 lg:h-40"
                 />
                 <div className="text-xs text-gray-500 mt-1 px-1 truncate">
-                  {p.filename}
+                  {p.filename || "Verified proof"}
                 </div>
               </div>
               {/* Right-arrow overlay on the rightmost visible thumbnail when more images exist */}

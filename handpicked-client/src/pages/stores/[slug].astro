@@ -200,11 +200,10 @@ const lastVerified = verifier
 const successRate = Math.floor(seededRandom(seed + 1) * 7) + 92;
 
 // Server-side fetch proofs
-let proofs: { image_url: string }[] = [];
+let proofs: { id?: string | number; image_url: string; filename?: string }[] = [];
 if(store?.id) {
   try {
-    const res = await api.get<{ proofs: { image_url: string }[] }>(`/stores/${store?.id}/proofs`);
-    console.log("proofs received ::: ", res);
+    const res = await api.get<{ proofs: { id?: string | number; image_url: string; filename?: string }[] }>(`/stores/${store?.id}/proofs`);
     proofs = res.proofs || [];
   } catch (e) {
     console.error("Error fetching proofs:", e);
