@@ -42,6 +42,9 @@ const ogImage = meta.og_image || "/og-default.png";
   <title>{title}</title>
   <meta name="description" content={description} />
   <link rel="canonical" href={canonical} />
+  {(meta.robots || meta.noindex) && (
+    <meta name="robots" content={meta.robots || (meta.noindex ? "noindex, follow" : "index, follow")} />
+  )}
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />

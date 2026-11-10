@@ -5,18 +5,23 @@ function SkeletonCard() {
   return <div className="animate-pulse bg-gray-100 rounded-xl h-28" />;
 }
 
-/** @param {{ apiUrl: string }} props */
-export default function PopularCategories({ apiUrl }) {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+/** @param {{ apiUrl: string, initialCategories?: any[] }} props */
+export default function PopularCategories({ apiUrl, initialCategories = [] }) {
+  const [categories, setCategories] = useState(initialCategories);
+  const [loading, setLoading] = useState(initialCategories.length === 0);
 
   useEffect(() => {
+    if (initialCategories && initialCategories.length > 0) {
+      setCategories(initialCategories);
+      setLoading(false);
+      return;
+    }
     fetch(`${apiUrl}/categories?show_home=true&limit=8`)
       .then((r) => r.json())
       .then((d) => setCategories(d.data || []))
       .catch(() => setCategories([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [apiUrl, initialCategories]);
 
   return (
     <section className="mt-10">

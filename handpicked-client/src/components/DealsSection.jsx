@@ -6,18 +6,23 @@ function SkeletonCard() {
   return <div className="animate-pulse bg-gray-100 rounded-xl h-40" />;
 }
 
-/** @param {{ apiUrl: string }} props */
-export default function TopDeals({ apiUrl }) {
-  const [coupons, setCoupons] = useState([]);
-  const [loading, setLoading] = useState(true);
+/** @param {{ apiUrl: string, initialDeals?: any[] }} props */
+export default function TopDeals({ apiUrl, initialDeals = [] }) {
+  const [coupons, setCoupons] = useState(initialDeals);
+  const [loading, setLoading] = useState(initialDeals.length === 0);
 
   useEffect(() => {
+    if (initialDeals && initialDeals.length > 0) {
+      setCoupons(initialDeals);
+      setLoading(false);
+      return;
+    }
     fetch(`${apiUrl}/coupons?mode=homepage&limit=8&status=active`)
       .then((r) => r.json())
       .then((d) => setCoupons(d.data || []))
       .catch(() => setCoupons([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [apiUrl, initialDeals]);
 
   return (
     <section className="mt-10">

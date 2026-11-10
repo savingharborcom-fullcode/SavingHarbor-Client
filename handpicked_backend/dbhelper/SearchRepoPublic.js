@@ -56,7 +56,7 @@ export async function searchStores({ q, limit = 6 }) {
     const { data, error } = await supabase
       .from("merchants")
       .select("id, slug, name, logo_url, category_names, active_coupons_count")
-      // .ilike("name", likeQ)
+      .eq("active", true)
       .or(`name.ilike.%${term}%,slug.ilike.%${slugifiedTerm}%`)
       .eq("is_publish", true)
       .order("active_coupons_count", { ascending: false })

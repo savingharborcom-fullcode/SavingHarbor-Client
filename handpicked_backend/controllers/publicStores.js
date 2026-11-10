@@ -1,7 +1,7 @@
 // controllers/publicStores.js
 import * as StoresRepo from "../dbhelper/StoresRepoPublic.js";
 import * as CouponsRepo from "../dbhelper/CouponsRepoPublic.js";
-import { ok, fail, notFound } from "../utils/http.js";
+import { ok, fail, notFound, gone } from "../utils/http.js";
 import { withCache } from "../utils/cache.js";
 import {
   valPage,
@@ -147,6 +147,7 @@ export async function detail(req, res) {
         // Fetch store (single fast lookup)
         const store = await StoresRepo.getBySlug(params.slug);
         if (!store) return { data: null, meta: { status: 404 } };
+        if (store.active === false) return { data: null, meta: { status: 410, is_gone: true } };
 
         store.category_names = [];
         const [category, subcategory] = await Promise.all([
@@ -474,7 +475,12 @@ export async function detail(req, res) {
       { ttlSeconds: 60, keyExtra: cacheKey },
     );
 
-    if (!result?.data) return notFound(res, "Store not found");
+    if (!result?.data) {
+      if (result?.meta?.status === 410) {
+        return gone(res, "Store permanently decommissioned");
+      }
+      return notFound(res, "Store not found");
+    }
     return ok(res, result);
   } catch (e) {
     console.error("Store detail controller error:", e);

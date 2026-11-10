@@ -11,6 +11,17 @@ const pageDesc =
 const canonical = "https://www.savingharbor.com/categories";
 
 const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
+
+let initialCategories: any[] = [];
+try {
+  const res = await fetch(`${apiUrl}/categories?limit=100`);
+  if (res.ok) {
+    const data = await res.json();
+    initialCategories = data?.data || [];
+  }
+} catch (e) {
+  console.error("[categories/index.astro] SSR fetch error:", e);
+}
 ---
 
 <Base meta={{ title: pageTitle, description: pageDesc, canonical }}>
@@ -22,7 +33,7 @@ const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
     </div>
 
     <!-- React island: sidebar + subcategories grid -->
-    <CategoriesGrid client:load apiUrl={apiUrl} />
+    <CategoriesGrid client:load apiUrl={apiUrl} initialCategories={initialCategories} />
   </main>
   <Footer />
 </Base>

@@ -7,7 +7,7 @@ import StoresGrid from "../../components/StoresGrid.tsx";
 
 const pageTitle = "All Stores - Saving Harbor | Verified Coupons & Deals";
 const pageDesc =
-  "Browse 20,000+ verified stores with handpicked coupons and deals. Find discounts from your favourite brands.";
+  "Browse verified stores with handpicked coupons and deals. Find human-tested discounts from your favourite brands.";
 const canonical = "https://www.savingharbor.com/stores";
 
 const ALPHABET = ["0-9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
@@ -17,11 +17,11 @@ const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
 let initialStores: any[] = [];
 let initialTotal = 0;
 let initialCursor = null;
-const initialLetter = "A";
+const initialLetter = "All";
 
 try {
   const res = await fetch(
-    `${apiUrl}/stores?limit=100&letter=${encodeURIComponent(initialLetter)}`,
+    `${apiUrl}/stores?limit=100&letter=All`,
     { headers: { "Content-Type": "application/json" } },
   );
 

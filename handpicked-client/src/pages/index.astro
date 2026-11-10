@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import Base from "../layouts/Base.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
@@ -10,6 +8,25 @@ import { SAMPLE_TESTIMONIALS } from "../content/testimonials.sample";
 import banners from "../content/banners.server";
 import BannerCarousel from "../components/BannerCarousel.jsx";
 const firstBanner = banners[0];
+
+const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
+
+let initialStores: any[] = [];
+let initialDeals: any[] = [];
+let initialCategories: any[] = [];
+
+try {
+  const [storesRes, dealsRes, catsRes] = await Promise.all([
+    fetch(`${apiUrl}/stores?mode=homepage&limit=8`).then((r) => r.ok ? r.json() : null).catch(() => null),
+    fetch(`${apiUrl}/coupons?mode=homepage&limit=8&status=active`).then((r) => r.ok ? r.json() : null).catch(() => null),
+    fetch(`${apiUrl}/categories?show_home=true&limit=8`).then((r) => r.ok ? r.json() : null).catch(() => null),
+  ]);
+  initialStores = storesRes?.data || [];
+  initialDeals = dealsRes?.data || [];
+  initialCategories = catsRes?.data || [];
+} catch (e) {
+  console.error("Homepage SSR fetch error:", e);
+}
 
 const jsonLD = {
   "@context": "https://schema.org",
@@ -61,7 +78,6 @@ let pageMeta = {
   jsonld: jsonLD,
 };
 
-const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
 const avg =
   SAMPLE_TESTIMONIALS.reduce((s, t) => s + (t.rating || 0), 0) /
     SAMPLE_TESTIMONIALS.length || null;
@@ -116,6 +132,9 @@ const avg =
       }[]}
       avgRating={avg}
       totalReviews={SAMPLE_TESTIMONIALS.length}
+      initialStores={initialStores}
+      initialDeals={initialDeals}
+      initialCategories={initialCategories}
     />
     <!-- Newsletter -->
     <section class="relative mt-16 rounded-xl overflow-hidden">

@@ -95,6 +95,7 @@ export async function list({
       const { data: mids, error: mErr } = await supabase
         .from("merchants")
         .select("id")
+        .eq("active", true)
         .contains("category_names", [categoryName]);
       if (!mErr && Array.isArray(mids) && mids.length) {
         qBuilder = qBuilder.in(
@@ -165,6 +166,7 @@ export async function list({
     const { data: mids, error: mErr } = await supabase
       .from("merchants")
       .select("id")
+      .eq("active", true)
       .contains("category_names", [categoryName]);
     if (!mErr && Array.isArray(mids) && mids.length) {
       qBuilder = qBuilder.in(

@@ -61,7 +61,8 @@ export async function list({
       let query = supabase
         .from("merchants")
         .select("id, slug, name, logo_url, active_coupons_count")
-        .eq("home", true) //
+        .eq("home", true)
+        .eq("active", true)
         .order("created_at", { ascending: false })
         .range(0, safeLimit - 1);
 
@@ -94,6 +95,7 @@ export async function list({
     let query = supabase
       .from("merchants")
       .select("id, slug, name, logo_url, active_coupons_count")
+      .eq("active", true)
       .order("name", { ascending: true })
       .order("id", { ascending: true })
       .limit(safeLimit + 1);
@@ -153,7 +155,8 @@ export async function list({
       try {
         let countQuery = supabase
           .from("merchants")
-          .select("id", { count: "exact", head: true });
+          .select("id", { count: "exact", head: true })
+          .eq("active", true);
         if (q) countQuery = countQuery.ilike("name", `%${q}%`);
         if (categoryName)
           countQuery = countQuery.contains("category_names", [categoryName]);
@@ -195,6 +198,7 @@ export async function getBySlug(slug) {
     id,
     slug,
     name,
+    active,
     logo_url,
     web_url,
     aff_url,

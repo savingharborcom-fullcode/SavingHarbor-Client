@@ -28,6 +28,19 @@ export function notFound(res, message = "Not found", headers = {}) {
   });
 }
 
+export function gone(res, message = "Resource permanently decommissioned", headers = {}) {
+  if (!res.get("Cache-Control")) {
+    res.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+  }
+  for (const [k, v] of Object.entries(headers || {})) {
+    if (v !== undefined && v !== null) res.set(k, v);
+  }
+  return res.status(410).json({
+    data: null,
+    meta: { status: 410, error: { message } },
+  });
+}
+
 export function fail(res, message, e, statusCode = 500, headers = {}) {
   // Avoid caching errors by default; do not set Cache-Control here.
   for (const [k, v] of Object.entries(headers || {})) {

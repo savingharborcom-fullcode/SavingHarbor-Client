@@ -1,11 +1,20 @@
 import { useState, useEffect } from "react";
 
-export default function ParentCategorySubcategories({ apiUrl, categorySlug }) {
-  const [subcategories, setSubcategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function ParentCategorySubcategories({
+  apiUrl,
+  categorySlug,
+  initialSubcategories = [],
+}) {
+  const [subcategories, setSubcategories] = useState(initialSubcategories);
+  const [loading, setLoading] = useState(initialSubcategories.length === 0);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (initialSubcategories && initialSubcategories.length > 0) {
+      setSubcategories(initialSubcategories);
+      setLoading(false);
+      return;
+    }
     const fetch_ = async () => {
       try {
         const res = await fetch(`${apiUrl}/categories/${categorySlug}`);
@@ -19,7 +28,7 @@ export default function ParentCategorySubcategories({ apiUrl, categorySlug }) {
       }
     };
     fetch_();
-  }, [categorySlug]);
+  }, [categorySlug, initialSubcategories]);
 
   if (loading) {
     return (

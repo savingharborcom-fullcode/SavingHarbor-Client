@@ -85,6 +85,7 @@ const canonical = category?.meta?.canonical;
               client:load
               apiUrl={import.meta.env.PUBLIC_API_BASE_URL}
               categorySlug={slug}
+              initialSubcategories={category.subcategories || []}
             />
           </div>
         </>

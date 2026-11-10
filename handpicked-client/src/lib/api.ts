@@ -1,6 +1,15 @@
 // api.ts
 const API_BASE_URL = process?.env?.PUBLIC_API_BASE_URL as string;
 
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 async function fetchJson<T>(
   path: string,
   init: RequestInit = {},
@@ -26,12 +35,24 @@ async function fetchJson<T>(
       clearTimeout(id);
 
       if (!res.ok) {
-        throw new Error(`API ${path} failed with status ${res.status}`);
+        const apiError = new ApiError(
+          `API ${path} failed with status ${res.status}`,
+          res.status
+        );
+        // Fail-fast on 4xx errors (e.g. 404, 410); do not waste retries
+        if (res.status >= 400 && res.status < 500) {
+          throw apiError;
+        }
+        throw apiError;
       }
 
       return (await res.json()) as T;
-    } catch (err) {
+    } catch (err: any) {
       clearTimeout(id);
+
+      if (err instanceof ApiError && err.status >= 400 && err.status < 500) {
+        throw err;
+      }
 
       if (attempt < retries) {
         console.warn(`Retrying ${path}, attempt ${attempt + 1}`);

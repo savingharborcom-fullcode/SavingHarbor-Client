@@ -1,11 +1,11 @@
 // src/components/CategoriesGrid.jsx
 import { useState, useEffect } from "react";
 
-export default function CategoriesGrid({ apiUrl }) {
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+export default function CategoriesGrid({ apiUrl, initialCategories = [] }) {
+  const [categories, setCategories] = useState(initialCategories);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategories[0] || null);
   const [subcategories, setSubcategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initialCategories.length === 0);
   const [loadingSubcats, setLoadingSubcats] = useState(false);
   const [error, setError] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -63,6 +63,12 @@ export default function CategoriesGrid({ apiUrl }) {
   };
 
   useEffect(() => {
+    if (initialCategories.length > 0) {
+      if (initialCategories[0]?.slug) {
+        fetchSubcategories(initialCategories[0].slug);
+      }
+      return;
+    }
     fetchCategories();
   }, []);
 

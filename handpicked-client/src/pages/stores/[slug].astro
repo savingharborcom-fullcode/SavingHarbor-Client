@@ -17,7 +17,7 @@ import RecentActivity from "../../components/RecentActivity.jsx";
 import TrendingOffersCompact from "../../components/TrendingOffersCompact.jsx";
 import WhyTrustUs from "../../components/WhyTrustUs.jsx";
 import ExpandableText from "../../components/ExpandableText.jsx";
-import { api } from "../../lib/api";
+import { api, ApiError } from "../../lib/api";
 import SavingsImpact from "../../components/SavingsImpact.astro";
 import FeedbackForm from "../../components/islands/FeedbackForm.jsx";
 import VerifiedBadge from "../../components/VerifiedBadge.astro";
@@ -108,14 +108,32 @@ function slugToSeed(slug: string): number {
 const { slug } = Astro.params as { slug: string };
 
 let resp: StoreDetailResponse | null = null;
+let httpStatus = 200;
+let isDecommissioned = false;
+
 try {
-  // Fixed: was ?limit100 (missing =)
-  resp = await api.get<StoreDetailResponse>(`/stores/${slug}?limit=100`, {}, { retries: 2, timeout: 8000 });
-} catch (e) {
-  console.error("Error fetching store detail:", e);
-  resp = { data: null, meta: { title: "Store - Saving Harbor", description: "Store details unavailable." } };
+  resp = await api.get<StoreDetailResponse>(`/stores/${slug}?limit=100`, {}, { retries: 0, timeout: 8000 });
+} catch (e: any) {
+  if (e instanceof ApiError && e.status === 410) {
+    httpStatus = 410;
+    isDecommissioned = true;
+  } else if (e instanceof ApiError && e.status === 404) {
+    // Treat removed/missing store URLs as 410 Gone so search engines drop them cleanly
+    httpStatus = 410;
+    isDecommissioned = true;
+  } else {
+    console.error("Error fetching store detail:", e);
+    httpStatus = 404;
+  }
+  resp = { data: null };
 }
+
 const store = resp?.data || null;
+
+if (!store) {
+  Astro.response.status = httpStatus;
+  Astro.response.statusText = httpStatus === 410 ? "Gone" : "Not Found";
+}
 
 // Dynamic breadcrumbs if referred from category page
 const refType = Astro.url.searchParams.get("ref");
@@ -144,12 +162,19 @@ if (store && refType === "category" && parentSlug && subSlug) {
 }
 
 const meta = resp?.meta || {};
-const pageTitle = meta?.title || (store?.name ? `${store.name} - Saving Harbor` : "Store - Saving Harbor");
-const pageDesc =
-  meta?.description ||
-  (store?.name ? `Saving Harbor coupons and deals for ${store.name}.` : "Saving Harbor store coupons and deals.");
-const canonical = meta?.canonical;
-const jsonld = meta?.jsonld;
+const pageTitle = store?.name
+  ? (meta?.title || `${store.name} - Saving Harbor`)
+  : isDecommissioned
+    ? "Store Discontinued - Saving Harbor"
+    : "Store Not Found - Saving Harbor";
+
+const pageDesc = store?.name
+  ? (meta?.description || `Saving Harbor coupons and deals for ${store.name}.`)
+  : "This store is no longer active on Saving Harbor. Browse our verified active stores for handpicked coupons and discount codes.";
+
+const canonical = store ? meta?.canonical : undefined;
+const jsonld = store ? meta?.jsonld : undefined;
+const noindex = !store;
 
 const safeSideHtml = store?.about_html || null;
 const safeDescriptionHtml = store?.description_html || null;
@@ -229,7 +254,7 @@ const visitUrl = store?.aff_url || store?.web_url || null;
 .clamp-3 { -webkit-line-clamp: 3; }
 </style>
 
-<Base meta={{ title: pageTitle, description: pageDesc, canonical, jsonld, og_image: store?.logo_url }}>
+<Base meta={{ title: pageTitle, description: pageDesc, canonical, jsonld, og_image: store?.logo_url, noindex }}>
   <Header />
 
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -404,12 +429,26 @@ const visitUrl = store?.aff_url || store?.web_url || null;
         </div>
       </>
     ) : (
-      <section class="py-20 text-center">
-        <h1 class="text-2xl font-bold text-brand-primary">Store not found</h1>
-        <p class="text-gray-600 mt-2">Please check the URL or browse all stores.</p>
-        <div class="mt-4">
-          <a href="/stores" class="px-4 py-2 rounded border border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white transition">
-            Back to Stores
+      <section class="py-20 text-center max-w-2xl mx-auto px-4">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-50 text-amber-600 mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <h1 class="text-3xl font-extrabold text-brand-primary">
+          {isDecommissioned ? "Store No Longer Tracked" : "Store Not Found"}
+        </h1>
+        <p class="text-gray-600 mt-3 text-base leading-relaxed">
+          {isDecommissioned
+            ? "We have discontinued coupon coverage for this store to ensure only verified, tested deals are provided. Explore our active verified stores below."
+            : "The store page requested does not exist or has been permanently removed."}
+        </p>
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <a href="/stores" class="px-5 py-2.5 rounded-lg bg-brand-primary text-white font-medium hover:bg-brand-primary/90 transition shadow-sm">
+            Browse Active Stores
+          </a>
+          <a href="/categories" class="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition">
+            Browse Categories
           </a>
         </div>
       </section>

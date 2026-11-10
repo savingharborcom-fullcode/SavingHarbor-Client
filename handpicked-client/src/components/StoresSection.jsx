@@ -5,18 +5,23 @@ function SkeletonCard() {
   return <div className="animate-pulse bg-gray-100 rounded-xl h-36" />;
 }
 
-/** @param {{ apiUrl: string }} props */
-export default function TopStores({ apiUrl }) {
-  const [stores, setStores] = useState([]);
-  const [loading, setLoading] = useState(true);
+/** @param {{ apiUrl: string, initialStores?: any[] }} props */
+export default function TopStores({ apiUrl, initialStores = [] }) {
+  const [stores, setStores] = useState(initialStores);
+  const [loading, setLoading] = useState(initialStores.length === 0);
 
   useEffect(() => {
+    if (initialStores && initialStores.length > 0) {
+      setStores(initialStores);
+      setLoading(false);
+      return;
+    }
     fetch(`${apiUrl}/stores?mode=homepage&limit=8`)
       .then((r) => r.json())
       .then((d) => setStores(d.data || []))
       .catch(() => setStores([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [apiUrl, initialStores]);
 
   return (
     <section className="mt-10">
